@@ -28,7 +28,7 @@ static const flash BYTE encode[256] = {
 
 void wait() {
   while(PINC.0==0); 
-  while(PINC.0); 
+  while(PINC.0);
 }
 
 void sendStart(BYTE c) { 

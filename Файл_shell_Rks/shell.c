@@ -228,19 +228,6 @@ void drawCmdLine() {
   drawInput(PRINTARGS(panelA.cmdLineOff, 23), 62-panelA.cmdLineOff);
 }
 
-/*
-void sort(char* lo0, char* hi0) {
-  char *d, *s;
-  for(; lo0!=hi0; lo0+=ITEM_SIZE) {
-    s = lo0;
-    for(d = s+ITEM_SIZE; d!=hi0; d+=ITEM_SIZE)
-      if(1==memcmp(s, d, ITEM_SIZE))
-        s = d;
-    if(s != lo0) memswap(s, lo0, ITEM_SIZE);
-  }
-}
-*/
-
 #define SORT_STACK_MAX 32
 
 uchar cmpFileInfo(FileInfo* a, FileInfo* b) {
@@ -335,7 +322,8 @@ void getFiles() {
           *n = *n-('A'-'a');
   }
 
-  sort(st, ((FileInfo*)panelA.files1) + (panelA.cnt-1));
+  if(panelA.cnt >= 2)
+    sort(st, ((FileInfo*)panelA.files1) + (panelA.cnt-1));
 }
 
 void reloadFiles(char* back) {  

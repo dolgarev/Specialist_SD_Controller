@@ -13,7 +13,7 @@ if errorlevel 1 goto err
 type errors.txt
 del errors.txt >nul
 copy s.bin+boot.bin+e.bin boot.rks
-rem copy boot.rks \\192.168.1.105\g\boot\boot.rks
+copy boot.rks \\book\e\boot\boot.rks
 if errorlevel 1 goto err
 exit
 :err
