@@ -5,7 +5,7 @@ end:
 entry:
   .org 0
   .dw $+4
-  .dw end-start
+  .dw end
 start:
   jmp main
 

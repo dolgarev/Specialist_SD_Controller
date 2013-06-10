@@ -75,7 +75,7 @@ void drawError(const char* text, uchar e) {
   old=graphOffset;
   graphOffset=0;
 
-  SET_COLOR(COLOR_RED);
+  setColor(COLOR_RED);
   drawWindow(" Žè¨¡ª  ");
   print1(PRINTARGS(27,13), 32, "[ ANY KEY ]");
   print1(PRINTARGS(13,09), 34, text);
@@ -110,7 +110,7 @@ char inputBox(const char* title) {
 
   while(1) {
     graph0();
-    SET_COLOR(COLOR_CYAN);
+    setColor(COLOR_CYAN);
     drawInput(PRINTARGS(16, 11), 32);
 
     c = getch1();

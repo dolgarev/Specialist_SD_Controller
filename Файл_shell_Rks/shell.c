@@ -1,6 +1,6 @@
 // Не поддерживается в пути . и ..
-#include <spec/color.h>
 #include <spec/bios.h>
+#include <spec/color.h>
 #include <n.h>
 #include <stdlib.h>
 #include "graph.h"
@@ -85,11 +85,11 @@ void drawFile(uchar x, uchar y) {
 
 void hideCursor_() {
   if(cursorX1) {
-    SET_COLOR(COLOR_CYAN);
+    setColor(COLOR_CYAN);
     graphXor();
     fillRect(cursorX1-3, cursorY1, cursorX1-1, cursorY1+9);
     fillRect(cursorX1+(12*6)+1, cursorY1, cursorX1+(12*6)+3, cursorY1+9);
-    SET_COLOR(COLOR_WHITE);
+    setColor(COLOR_WHITE);
     fillRect(cursorX1, cursorY1, cursorX1+(12*6), cursorY1+9);
     cursorX1 = 0;
   }
@@ -117,7 +117,7 @@ void drawFileInfo_() {
   FileInfo* f;
   char buf[16];
 
-  SET_COLOR(COLOR_WHITE);
+  setColor(COLOR_WHITE);
   graph0();
 
   n = panelA.offset+panelA.cursorY+panelA.cursorX*ROWS_CNT;
@@ -161,7 +161,7 @@ void moveCursor_() {
   cursorX1 = panelA.cursorX*88+16;
   cursorY1 = (panelA.cursorY+2)*10;
   
-  SET_COLOR(COLOR_CYAN);
+  setColor(COLOR_CYAN);
   graphXor();
   fillRect(cursorX1-3, cursorY1, cursorX1+(12*6)+3, cursorY1+9);
 
@@ -181,7 +181,7 @@ void clearCmdLine() {
 void drawPathInCmdLine() {
   ushort o, l, old;
   graph0();
-  SET_COLOR(COLOR_WHITE);  
+  setColor(COLOR_WHITE);  
   fillrect1(FILLRECTARGS(0,230,383,239));
   l = strlen(panelA.path);
   if(l>=30) o=l-30, l=30; else o=0;
@@ -198,7 +198,7 @@ void drawPath_(uchar active) {
 
   p  = panelA.path;
 
-  SET_COLOR(COLOR_CYAN);
+  setColor(COLOR_CYAN);
 
   x1 = 18;
   x3 = x1+6*27;
@@ -216,7 +216,7 @@ void drawPath_(uchar active) {
   fillRect(x*4-3, 0, x*4+l*6+6, 9);
   print1(PIXELCOORDS((x/2), 0), (((uchar)x)&1) ? 1 : 3, l, p);
 
-  SET_COLOR(COLOR_WHITE);  
+  setColor(COLOR_WHITE);  
 }
 
 // 
@@ -322,7 +322,7 @@ void getFiles() {
           *n = *n-('A'-'a');
   }
 
-  if(panelA.cnt >= 2)
+  if(panelA.cnt > 1)
     sort(st, ((FileInfo*)panelA.files1) + (panelA.cnt-1));
 }
 
@@ -483,16 +483,16 @@ uchar addPath1(uchar mode) {
 
 void drawAll_() { 
   graph1();
-  SET_COLOR(COLOR_CYAN);
+  setColor(COLOR_CYAN);
   rect1(RECTARGS(6,3,186,45+ROWS_CNT*10));
   rect1(RECTARGS(8,5,184,43+ROWS_CNT*10));
   fillRect1(FILLRECTARGS(96,6,96,24+ROWS_CNT*10));
   fillRect1(FILLRECTARGS(9,25+ROWS_CNT*10,184,25+ROWS_CNT*10));
-  SET_COLOR(COLOR_YELLOW);
+  setColor(COLOR_YELLOW);
   graph0();
   print1(TEXTCOORDS(7,1), 0, 4, "Name");
   print1(TEXTCOORDS(22,1), 0, 4, "Name");
-  SET_COLOR(COLOR_WHITE);
+  setColor(COLOR_WHITE);
 }
 
 void drawHelp() {
@@ -500,11 +500,11 @@ void drawHelp() {
   uchar* d;
   
   graph0();
-  SET_COLOR(COLOR_WHITE);
+  setColor(COLOR_WHITE);
 //  fillRect1(TEXTCOORDS(0, 24)-1, 47, 255, 255, 16);
   print1(TEXTCOORDS(1, 24), 3, 64, "1FREE   2NEW    3VIEW   4EDIT   5COPY   6REN    7DIR    8DEL"); 
 
-  SET_COLOR(COLOR_CYAN);
+  setColor(COLOR_CYAN);
   graphXor();
   for(i=0, d = TEXTCOORDS(2, 24)-1; i<8; i++, d+=0x600)
     fillRect1(d, 3, 255, 255, 10);
@@ -704,6 +704,8 @@ void main() {
   uint l;
 
   fs_init();
+
+  setColorAutoDisable();
  
   panelA.files1 = (FileInfo*)START_FILE_BUFFER;
   panelB.files1 = ((FileInfo*)START_FILE_BUFFER)+MAX_FILES;

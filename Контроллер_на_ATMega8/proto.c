@@ -3,7 +3,7 @@
 
 #include "proto.h"
 
-#define VINX_BUG
+//#define VINX_BUG
 
 #ifdef VINX_BUG
 // я накос€чил в пор€дке ножек

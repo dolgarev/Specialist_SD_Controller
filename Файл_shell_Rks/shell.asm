@@ -293,9 +293,9 @@ hideCursor_:
   mov a, l
   ora h
   jz l11
-  ; 1 *(uchar*)(0xFFFE)=(C); }
-  lxi h, 65534
-  mvi m, 128
+  ; 88 setColor(COLOR_CYAN);
+  mvi a, 128
+  call setColor
   ; 89 graphXor();
   call graphXor
   ; 90 fillRect(cursorX1-3, cursorY1, cursorX1-1, cursorY1+9);Сложение с константой -3
@@ -334,9 +334,9 @@ hideCursor_:
   lda cursorY1
   adi 9
   call fillRect
-  ; 1 *(uchar*)(0xFFFE)=(C); }
-  lxi h, 65534
-  mvi m, 0
+  ; 92 setColor(COLOR_WHITE);
+  xra a
+  call setColor
   ; 93 fillRect(cursorX1, cursorY1, cursorX1+(12*6), cursorY1+9);
   lhld cursorX1
   shld fillRect_1
@@ -458,8 +458,8 @@ l18:
   dad d
   jmp normalizeFileName
 drawFileInfo_:
-  lxi h, 65534
-  mvi m, 0
+  xra a
+  call setColor
   ; 121 graph0();
   call graph0
   ; 123 n = panelA.offset+panelA.cursorY+panelA.cursorX*ROWS_CNT;Сложение
@@ -731,9 +731,9 @@ moveCursor_:
   call op_mul
   mov a, l
   sta cursorY1
-  ; 1 *(uchar*)(0xFFFE)=(C); }
-  lxi h, 65534
-  mvi m, 128
+  ; 164 setColor(COLOR_CYAN);
+  mvi a, 128
+  call setColor
   ; 165 graphXor();
   call graphXor
   ; 166 fillRect(cursorX1-3, cursorY1, cursorX1+(12*6)+3, cursorY1+9);Сложение с константой -3
@@ -781,9 +781,9 @@ clearCmdLine:
   jmp drawCmdLine
 drawPathInCmdLine:
   call graph0
-  ; 1 *(uchar*)(0xFFFE)=(C); }
-  lxi h, 65534
-  mvi m, 0
+  ; 184 setColor(COLOR_WHITE);  
+  xra a
+  call setColor
   ; 185 fillrect1(FILLRECTARGS(0,230,383,239));
   lxi h, 37094
   shld fillRect1_1
@@ -861,9 +861,9 @@ drawPath_:
   ; 199 p  = panelA.path;
   lxi h, (panelA)+(7)
   shld drawPath__p
-  ; 1 *(uchar*)(0xFFFE)=(C); }
-  lxi h, 65534
-  mvi m, 128
+  ; 201 setColor(COLOR_CYAN);
+  mvi a, 128
+  call setColor
   ; 203 x1 = 18;
   lxi h, 18
   shld drawPath__x1
@@ -993,11 +993,9 @@ l33:
   sta print1_3
   lhld drawPath__p
   call print1
-  ; 1 *(uchar*)(0xFFFE)=(C); }
-  lxi h, 65534
-  mvi m, 0
-  ret
-  ; --- drawCmdLine -----------------------------------------------------------------
+  ; 219 setColor(COLOR_WHITE);  
+  xra a
+  jmp setColor
 drawCmdLine:
   lhld cmdline_pos
   lxi d, cmdline
@@ -1527,11 +1525,13 @@ l69:
   shld getFiles_f
   jmp l67
 l68:
-  ; 325 if(panelA.cnt >= 2)Сложение с константой -2
+  ; 325 if(panelA.cnt > 1)Сложение с константой -2
   lhld (panelA)+(263)
   dcx h
   dcx h
+  jz l77
   jnc l76
+l77:
   ; 326 sort(st, ((FileInfo*)panelA.files1) + (panelA.cnt-1));
   lhld getFiles_st
   shld sort_1
@@ -1573,19 +1573,19 @@ reloadFiles:
   lhld reloadFiles_1
   mov a, l
   ora h
-  jz l77
+  jz l78
   ; 343 for(l=0, f=panelA.files1; l<panelA.cnt; ++l, ++f) {
   lxi h, 0
   shld reloadFiles_l
   lhld panelA
   shld reloadFiles_f
-l78:
+l79:
   lhld reloadFiles_l
   xchg
   lhld (panelA)+(263)
   call op_cmp16
-  jc l79
-  jz l79
+  jc l80
+  jz l80
   ; 344 if(0==memcmp(f->fname, back, 11)) {
   lhld reloadFiles_f
   shld memcmp_1
@@ -1594,12 +1594,12 @@ l78:
   lxi h, 11
   call memcmp
   ora a
-  jnz l81
+  jnz l82
   ; 346 if(l>=2*ROWS_CNT) {Сложение
   lhld reloadFiles_l
   lxi d, 65500
   dad d
-  jnc l82
+  jnc l83
   ; 347 panelA.offset = l-ROWS_CNT-(l%ROWS_CNT);Сложение
   lhld reloadFiles_l
   lxi d, 65518
@@ -1628,7 +1628,7 @@ l78:
   sbb d
   mov h, a
   shld reloadFiles_l
-l82:
+l83:
   ; 351 panelA.cursorX = l/ROWS_CNT;
   lxi d, 18
   lhld reloadFiles_l
@@ -1639,9 +1639,9 @@ l82:
   lda op_div16_mod
   sta (panelA)+(3)
   ; 353 break;
-  jmp l79
+  jmp l80
+l82:
 l81:
-l80:
   lhld reloadFiles_l
   inx h
   shld reloadFiles_l
@@ -1649,9 +1649,9 @@ l80:
   lxi d, 20
   dad d
   shld reloadFiles_f
-  jmp l78
-l79:
-l77:
+  jmp l79
+l80:
+l78:
   ; 358 graphOffset = panelGraphOffset;
   lhld panelGraphOffset
   shld graphOffset
@@ -1674,11 +1674,11 @@ dropPath:
   lxi d, (panelA)+(7)
   dad d
   shld dropPath_p
-l83:
+l84:
   ; 373 if(*p=='/') { 
   mov a, m
   cpi 47
-  jnz l86
+  jnz l87
   ; 374 prepareFileName(buf, p+1);
   lxi h, dropPath_buf
   shld prepareFileName_1
@@ -1690,35 +1690,35 @@ l83:
   lhld dropPath_l
   mov a, l
   ora h
-  jnz l87
+  jnz l88
   ; 375 ++p;
   lhld dropPath_p
   inx h
   shld dropPath_p
-l87:
+l88:
   ; 376 *p=0;
   lhld dropPath_p
   mvi m, 0
   ; 377 break;
-  jmp l84
-l86:
+  jmp l85
+l87:
   ; 379 if(l==0) return;Сложение с константой 0
   lhld dropPath_l
   mov a, l
   ora h
-  jnz l88
+  jnz l89
   ; 379 return;
   ret
-l88:
-l85:
+l89:
+l86:
   lhld dropPath_l
   dcx h
   shld dropPath_l
   lhld dropPath_p
   dcx h
   shld dropPath_p
-  jmp l83
-l84:
+  jmp l84
+l85:
   ; 382 reloadFiles(buf);
   lxi h, dropPath_buf
   jmp reloadFiles
@@ -1728,11 +1728,11 @@ addPath1:
   lhld (panelA)+(263)
   mov a, l
   ora h
-  jnz l89
+  jnz l90
   ; 427 return 1;
   mvi a, 1
   ret
-l89:
+l90:
   ; 430 f = panelA.files1 + (panelA.offset + panelA.cursorY + panelA.cursorX*ROWS_CNT);Сложение
   lhld (panelA)+(5)
   xchg
@@ -1764,21 +1764,21 @@ l89:
   ; 439 if(s[0] == '.') { Сложение с константой 0
   mov a, m
   cpi 46
-  jnz l90
+  jnz l91
   ; 440 if(mode != A_ENTER) return 1;
   lda addPath1_1
   ora a
-  jz l91
+  jz l92
   ; 440 return 1;
   mvi a, 1
   ret
-l91:
+l92:
   ; 441 dropPath(); 
   call dropPath
   ; 442 return 0; 
   xra a
   ret
-l90:
+l91:
   ; 446 normalizeFileName(buf, s);
   lxi h, addPath1_buf
   shld normalizeFileName_1
@@ -1797,7 +1797,7 @@ l90:
   dcx h
   mov a, l
   ora h
-  jz l92
+  jz l93
   ; 454 if(o + strlen(buf) >= 254) return 1; // Слишком длинный путь
   lxi h, addPath1_buf
   call strlen
@@ -1809,18 +1809,18 @@ l90:
   ; Сложение
   lxi d, 65282
   dad d
-  jnc l93
+  jnc l94
   ; 454 return 1; // Слишком длинный путь
   mvi a, 1
   ret
-l93:
+l94:
   ; 455 *d = '/'; ++d;
   lhld addPath1_d
   mvi m, 47
   ; 455 ++d;
   inx h
   shld addPath1_d
-l92:
+l93:
   ; 457 strcpy(d, buf);    
   lhld addPath1_d
   shld strcpy_1
@@ -1829,7 +1829,7 @@ l92:
   ; 460 if(mode == A_ENTER) {
   lda addPath1_1
   ora a
-  jnz l94
+  jnz l95
   ; 461 if(f->fattrib & 0x10) { Сложение
   lhld addPath1_f
   lxi d, 11
@@ -1837,15 +1837,15 @@ l92:
   mov a, m
   ani 16
   ; convertToConfition
-  jz l95
+  jz l96
   ; 462 reloadFiles(0);
   lxi h, 0
   call reloadFiles
   ; 463 return 0;
   xra a
   ret
+l96:
 l95:
-l94:
   ; 468 strcpy(cmdline, panelA.path);
   lxi h, cmdline
   shld strcpy_1
@@ -1865,7 +1865,7 @@ l94:
   ; 476 if(mode == A_ENTER) {
   lda addPath1_1
   ora a
-  jnz l96
+  jnz l97
   ; 477 cmd_run2(cmdline, "");
   lxi h, cmdline
   shld cmd_run2_1
@@ -1873,16 +1873,16 @@ l94:
   call cmd_run2
   ; 478 clearCmdLine();
   call clearCmdLine
-l96:
+l97:
   ; 481 return 0;
   xra a
   ret
   ; --- drawAll_ -----------------------------------------------------------------
 drawAll_:
   call graph1
-  ; 1 *(uchar*)(0xFFFE)=(C); }
-  lxi h, 65534
-  mvi m, 128
+  ; 486 setColor(COLOR_CYAN);
+  mvi a, 128
+  call setColor
   ; 487 rect1(RECTARGS(6,3,186,45+ROWS_CNT*10));
   lxi h, 36867
   shld rect1_1
@@ -1935,9 +1935,9 @@ drawAll_:
   sta fillRect1_4
   mvi a, 1
   call fillRect1
-  ; 1 *(uchar*)(0xFFFE)=(C); }
-  lxi h, 65534
-  mvi m, 16
+  ; 491 setColor(COLOR_YELLOW);
+  mvi a, 16
+  call setColor
   ; 492 graph0();
   call graph0
   ; 493 print1(TEXTCOORDS(7,1), 0, 4, "Name");
@@ -1958,16 +1958,14 @@ drawAll_:
   sta print1_3
   lxi h, string4
   call print1
-  ; 1 *(uchar*)(0xFFFE)=(C); }
-  lxi h, 65534
-  mvi m, 0
-  ret
-  ; --- drawHelp -----------------------------------------------------------------
+  ; 495 setColor(COLOR_WHITE);
+  xra a
+  jmp setColor
 drawHelp:
   call graph0
-  ; 1 *(uchar*)(0xFFFE)=(C); }
-  lxi h, 65534
-  mvi m, 0
+  ; 503 setColor(COLOR_WHITE);
+  xra a
+  call setColor
   ; 505 print1(TEXTCOORDS(1, 24), 3, 64, "1FREE   2NEW    3VIEW   4EDIT   5COPY   6REN    7DIR    8DEL"); 
   lxi h, 37105
   shld print1_1
@@ -1977,9 +1975,9 @@ drawHelp:
   sta print1_3
   lxi h, string5
   call print1
-  ; 1 *(uchar*)(0xFFFE)=(C); }
-  lxi h, 65534
-  mvi m, 128
+  ; 507 setColor(COLOR_CYAN);
+  mvi a, 128
+  call setColor
   ; 508 graphXor();
   call graphXor
   ; 509 for(i=0, d = TEXTCOORDS(2, 24)-1; i<8; i++, d+=0x600)
@@ -1987,10 +1985,10 @@ drawHelp:
   sta drawHelp_i
   lxi h, 37360
   shld drawHelp_d
-l97:
+l98:
   lda drawHelp_i
   cpi 8
-  jnc l98
+  jnc l99
   ; 510 fillRect1(d, 3, 255, 255, 10);
   shld fillRect1_1
   lxi h, 3
@@ -2000,7 +1998,7 @@ l97:
   sta fillRect1_4
   mvi a, 10
   call fillRect1
-l99:
+l100:
   lxi h, drawHelp_i
   mov a, m
   inr m
@@ -2009,8 +2007,8 @@ l99:
   lhld drawHelp_d
   dad d
   shld drawHelp_d
-  jmp l97
-l98:
+  jmp l98
+l99:
   ret
   ; --- dupPanel -----------------------------------------------------------------
 dupPanel:
@@ -2114,22 +2112,22 @@ cursor_left:
   ; 562 if(panelA.cursorX) { convertToConfition
   lda (panelA)+(2)
   ora a
-  jz l101
+  jz l102
   ; 563 --panelA.cursorX; 
   lxi h, (panelA)+(2)
   dcr m
-  jmp l102
-l101:
+  jmp l103
+l102:
   ; 565 if(panelA.offset) { convertToConfition
   lhld (panelA)+(5)
   mov a, l
   ora h
-  jz l103
+  jz l104
   ; 566 if(ROWS_CNT > panelA.offset) { Сложение
   lxi d, 65518
   dad d
-  jc l104
-  jz l104
+  jc l105
+  jz l105
   ; 567 panelA.offset = 0; 
   lxi h, 0
   shld (panelA)+(5)
@@ -2137,8 +2135,8 @@ l101:
   call hideCursor_
   ; 569 drawFiles_();
   call drawFiles_
-  jmp l105
-l104:
+  jmp l106
+l105:
   ; 571 panelA.offset -= ROWS_CNT; 16 битная арифметическая операция с константой
   lhld (panelA)+(5)
   mov a, l
@@ -2162,19 +2160,19 @@ l104:
   ; 574 drawColumn_(0);
   xra a
   call drawColumn_
-l105:
-  jmp l106
-l103:
+l106:
+  jmp l107
+l104:
   ; 577 if(panelA.cursorY) {convertToConfition
   lda (panelA)+(3)
   ora a
-  jz l107
+  jz l108
   ; 578 panelA.cursorY = 0; 
   xra a
   sta (panelA)+(3)
+l108:
 l107:
-l106:
-l102:
+l103:
   ; 581 moveCursor_();
   call moveCursor_
   ; 583 graphOffset = 0;
@@ -2205,24 +2203,24 @@ cursor_right:
   xchg
   lhld (panelA)+(263)
   call op_cmp16
-  jz l109
-  jnc l108
-l109:
+  jz l110
+  jnc l109
+l110:
   ; 595 if(w + 1 >= panelA.cnt) { Сложение с константой 1
   lhld cursor_right_w
   inx h
   xchg
   lhld (panelA)+(263)
   call op_cmp16
-  jz l111
-  jnc l110
-l111:
+  jz l112
+  jnc l111
+l112:
   ; 596 graphOffset = 0;
   lxi h, 0
   shld graphOffset
   ; 597 return;
   ret
-l110:
+l111:
   ; 600 panelA.cursorY = panelA.cnt - (panelA.offset + panelA.cursorX*ROWS_CNT + 1);
   mvi d, 18
   lda (panelA)+(2)
@@ -2246,15 +2244,15 @@ l110:
   sta (panelA)+(3)
   ; 602 if(panelA.cursorY>ROWS_CNT-1) {
   cpi 17
-  jc l112
-  jz l112
+  jc l113
+  jz l113
   ; 603 panelA.cursorY -= ROWS_CNT;Арифметика 4/3
   sui 18
   sta (panelA)+(3)
   ; 604 if(panelA.cursorX == 1) { 
   lda (panelA)+(2)
   cpi 1
-  jnz l113
+  jnz l114
   ; 605 panelA.offset += ROWS_CNT;Сложение
   lxi d, 18
   lhld (panelA)+(5)
@@ -2264,19 +2262,19 @@ l110:
   call hideCursor_
   ; 607 drawFiles_();
   call drawFiles_
-  jmp l114
-l113:
+  jmp l115
+l114:
   ; 609 panelA.cursorX++; 
   lxi h, (panelA)+(2)
   inr m
-l114:
-l112:
-  jmp l115
-l108:
+l115:
+l113:
+  jmp l116
+l109:
   ; 613 if(panelA.cursorX == 1) { 
   lda (panelA)+(2)
   cpi 1
-  jnz l116
+  jnz l117
   ; 614 panelA.offset += ROWS_CNT;Сложение
   lxi d, 18
   lhld (panelA)+(5)
@@ -2296,13 +2294,13 @@ l108:
   ; 617 drawColumn_(1);
   mvi a, 1
   call drawColumn_
-  jmp l117
-l116:
+  jmp l118
+l117:
   ; 619 panelA.cursorX++;
   lxi h, (panelA)+(2)
   inr m
-l117:
-l115:
+l118:
+l116:
   ; 622 moveCursor_();
   call moveCursor_
   ; 624 graphOffset = 0;
@@ -2316,29 +2314,29 @@ cursor_up:
   ; 630 if(panelA.cursorY) { convertToConfition
   lda (panelA)+(3)
   ora a
-  jz l118
+  jz l119
   ; 631 --panelA.cursorY;
   lxi h, (panelA)+(3)
   dcr m
-  jmp l119
-l118:
+  jmp l120
+l119:
   ; 633 if(panelA.cursorX) { convertToConfition
   lda (panelA)+(2)
   ora a
-  jz l120
+  jz l121
   ; 634 --panelA.cursorX;
   lxi h, (panelA)+(2)
   dcr m
   ; 635 panelA.cursorY = ROWS_CNT-1; 
   mvi a, 17
   sta (panelA)+(3)
-  jmp l121
-l120:
+  jmp l122
+l121:
   ; 637 if(panelA.offset) {convertToConfition
   lhld (panelA)+(5)
   mov a, l
   ora h
-  jz l122
+  jz l123
   ; 638 --panelA.offset; 
   dcx h
   shld (panelA)+(5)
@@ -2371,9 +2369,9 @@ l120:
   sta drawFile_1
   xra a
   call drawFile
+l123:
 l122:
-l121:
-l119:
+l120:
   ; 646 moveCursor_();
   call moveCursor_
   ; 648 graphOffset = 0;
@@ -2399,36 +2397,36 @@ cursor_down:
   xchg
   lhld (panelA)+(263)
   call op_cmp16
-  jz l124
-  jnc l123
-l124:
+  jz l125
+  jnc l124
+l125:
   ; 652 return;
   ret
-l123:
+l124:
   ; 654 graphOffset = panelGraphOffset;
   lhld panelGraphOffset
   shld graphOffset
   ; 656 if(panelA.cursorY < ROWS_CNT-1) {
   lda (panelA)+(3)
   cpi 17
-  jnc l125
+  jnc l126
   ; 657 ++panelA.cursorY;
   lxi h, (panelA)+(3)
   inr m
-  jmp l126
-l125:
+  jmp l127
+l126:
   ; 659 if(panelA.cursorX == 0) {
   lda (panelA)+(2)
   ora a
-  jnz l127
+  jnz l128
   ; 660 panelA.cursorY = 0;
   xra a
   sta (panelA)+(3)
   ; 661 ++panelA.cursorX; 
   lxi h, (panelA)+(2)
   inr m
-  jmp l128
-l127:
+  jmp l129
+l128:
   ; 663 ++panelA.offset; 
   lhld (panelA)+(5)
   inx h
@@ -2463,8 +2461,8 @@ l127:
   sta drawFile_1
   mvi a, 17
   call drawFile
-l128:
-l126:
+l129:
+l127:
   ; 671 moveCursor_();
   call moveCursor_
   ; 673 graphOffset = 0;
@@ -2503,10 +2501,10 @@ cmd_char:
   dad d
   mov a, l
   ora h
-  jnz l129
+  jnz l130
   ; 689 return; 
   ret
-l129:
+l130:
   ; 690 cmdline[cmdline_pos] = c;Сложение
   lhld cmdline_pos
   lxi d, cmdline
@@ -2523,10 +2521,10 @@ cmd_bkspc:
   lhld cmdline_pos
   mov a, l
   ora h
-  jnz l130
+  jnz l131
   ; 696 return;
   ret
-l130:
+l131:
   ; 697 --cmdline_pos;    
   dcx h
   shld cmdline_pos
@@ -2534,37 +2532,39 @@ l130:
   jmp drawCmdLine
 main:
   call fs_init
-  ; 708 panelA.files1 = (FileInfo*)START_FILE_BUFFER;
+  ; 708 setColorAutoDisable();
+  call setColorAutoDisable
+  ; 710 panelA.files1 = (FileInfo*)START_FILE_BUFFER;
   lxi h, 16384
   shld panelA
-  ; 709 panelB.files1 = ((FileInfo*)START_FILE_BUFFER)+MAX_FILES;
+  ; 711 panelB.files1 = ((FileInfo*)START_FILE_BUFFER)+MAX_FILES;
   lxi h, 23544
   shld panelB
-  ; 711 clrscr();
+  ; 713 clrscr();
   call clrscr
-  ; 717 graphOffset = 0;
+  ; 719 graphOffset = 0;
   lxi h, 0
   shld graphOffset
-  ; 718 cursorX1=0;
+  ; 720 cursorX1=0;
   shld cursorX1
-  ; 721 strcpy(panelA.path, "/");
+  ; 723 strcpy(panelA.path, "/");
   lxi h, (panelA)+(7)
   shld strcpy_1
   lxi h, string6
   call strcpy
-  ; 722 strcpy(panelB.path, "/");
+  ; 724 strcpy(panelB.path, "/");
   lxi h, (panelB)+(7)
   shld strcpy_1
   lxi h, string6
   call strcpy
-  ; 723 drawHelp();           
+  ; 725 drawHelp();           
   call drawHelp
-  ; 724 repairScreen(0);
+  ; 726 repairScreen(0);
   xra a
   call repairScreen
-  ; 727 getFiles();
+  ; 729 getFiles();
   call getFiles
-  ; 728 memcpy(panelB.files1, panelA.files1, panelA.cnt*sizeof(*panelA.files1));
+  ; 730 memcpy(panelB.files1, panelA.files1, panelA.cnt*sizeof(*panelA.files1));
   lhld panelB
   shld memcpy_1
   lhld panelA
@@ -2573,181 +2573,181 @@ main:
   lxi d, 20
   call op_mul16
   call memcpy
-  ; 729 panelB.cnt = panelA.cnt;
+  ; 731 panelB.cnt = panelA.cnt;
   lhld (panelA)+(263)
   shld (panelB)+(263)
-  ; 732 drawFiles2_go();
+  ; 734 drawFiles2_go();
   call drawFiles2_go
-  ; 734 while(1) {
-l131:
-  ; 735 c = getch1();
+  ; 736 while(1) {
+l132:
+  ; 737 c = getch1();
   call getch1
   sta main_c
-  ; 737 switch(c) {
+  ; 739 switch(c) {
   cpi 8
-  jz l134
-  cpi 243
   jz l135
-  cpi 244
+  cpi 243
   jz l136
-  cpi 245
+  cpi 244
   jz l137
-  cpi 246
+  cpi 245
   jz l138
+  cpi 246
+  jz l139
   cpi 247
-  jz l141
-  cpi 248
   jz l142
-  cpi 249
+  cpi 248
   jz l143
-  cpi 250
+  cpi 249
   jz l144
-  cpi 13
+  cpi 250
   jz l145
+  cpi 13
+  jz l146
   cpi 27
-  jz l148
+  jz l149
   cpi 25
-  jz l151
-  cpi 24
   jz l152
-  cpi 26
+  cpi 24
   jz l153
-  cpi 23
+  cpi 26
   jz l154
-  cpi 9
+  cpi 23
   jz l155
-  jmp l133
-l134:
-  ; 738 cmd_bkspc(); continue;
-  call cmd_bkspc
-  ; 738 continue;
-  jmp l131
+  cpi 9
+  jz l156
+  jmp l134
 l135:
-  ; 739 cmd_freespace(); continue;
-  call cmd_freespace
-  ; 739 continue;
-  jmp l131
+  ; 740 cmd_bkspc(); continue;
+  call cmd_bkspc
+  ; 740 continue;
+  jmp l132
 l136:
-  ; 740 cmd_new(0); continue;
+  ; 741 cmd_freespace(); continue;
+  call cmd_freespace
+  ; 741 continue;
+  jmp l132
+l137:
+  ; 742 cmd_new(0); continue;
   xra a
   call cmd_new
-  ; 740 continue;
-  jmp l131
-l137:
-  ; 741 cmd_run("view.rks", 1); continue;
+  ; 742 continue;
+  jmp l132
+l138:
+  ; 743 cmd_run("view.rks", 1); continue;
   lxi h, string7
   shld cmd_run_1
   mvi a, 1
   call cmd_run
-  ; 741 continue;
-  jmp l131
-l138:
-  ; 742 if(shiftPressed()) cmd_new(0); else cmd_run("edit.rks", 1); continue;
+  ; 743 continue;
+  jmp l132
+l139:
+  ; 744 if(shiftPressed()) cmd_new(0); else cmd_run("edit.rks", 1); continue;
   call shiftPressed
   ; convertToConfition
   ora a
-  jz l139
-  ; 742 cmd_new(0); else cmd_run("edit.rks", 1); continue;
+  jz l140
+  ; 744 cmd_new(0); else cmd_run("edit.rks", 1); continue;
   xra a
   call cmd_new
-  jmp l140
-l139:
-  ; 742 cmd_run("edit.rks", 1); continue;
+  jmp l141
+l140:
+  ; 744 cmd_run("edit.rks", 1); continue;
   lxi h, string8
   shld cmd_run_1
   mvi a, 1
   call cmd_run
-l140:
-  ; 742 continue;
-  jmp l131
 l141:
-  ; 743 cmd_copymove(1); continue;
+  ; 744 continue;
+  jmp l132
+l142:
+  ; 745 cmd_copymove(1); continue;
   mvi a, 1
   call cmd_copymove
-  ; 743 continue;
-  jmp l131
-l142:
-  ; 744 cmd_copymove(0); continue;
+  ; 745 continue;
+  jmp l132
+l143:
+  ; 746 cmd_copymove(0); continue;
   xra a
   call cmd_copymove
-  ; 744 continue;
-  jmp l131
-l143:
-  ; 745 cmd_new(1); continue;
+  ; 746 continue;
+  jmp l132
+l144:
+  ; 747 cmd_new(1); continue;
   mvi a, 1
   call cmd_new
-  ; 745 continue;
-  jmp l131
-l144:
-  ; 746 cmd_delete(); continue;
-  call cmd_delete
-  ; 746 continue;
-  jmp l131
+  ; 747 continue;
+  jmp l132
 l145:
-  ; 747 if(cmdline_pos) cmd_run(0, 0); else addPath1(A_ENTER); continue;convertToConfition
+  ; 748 cmd_delete(); continue;
+  call cmd_delete
+  ; 748 continue;
+  jmp l132
+l146:
+  ; 749 if(cmdline_pos) cmd_run(0, 0); else addPath1(A_ENTER); continue;convertToConfition
   lhld cmdline_pos
   mov a, l
   ora h
-  jz l146
-  ; 747 cmd_run(0, 0); else addPath1(A_ENTER); continue;
+  jz l147
+  ; 749 cmd_run(0, 0); else addPath1(A_ENTER); continue;
   lxi h, 0
   shld cmd_run_1
   xra a
   call cmd_run
-  jmp l147
-l146:
-  ; 747 addPath1(A_ENTER); continue;
+  jmp l148
+l147:
+  ; 749 addPath1(A_ENTER); continue;
   xra a
   call addPath1
-l147:
-  ; 747 continue;
-  jmp l131
 l148:
-  ; 748 if(cmdline_pos) clearCmdLine(); else dropPath(); continue;convertToConfition
+  ; 749 continue;
+  jmp l132
+l149:
+  ; 750 if(cmdline_pos) clearCmdLine(); else dropPath(); continue;convertToConfition
   lhld cmdline_pos
   mov a, l
   ora h
-  jz l149
-  ; 748 clearCmdLine(); else dropPath(); continue;
+  jz l150
+  ; 750 clearCmdLine(); else dropPath(); continue;
   call clearCmdLine
-  jmp l150
-l149:
-  ; 748 dropPath(); continue;
-  call dropPath
+  jmp l151
 l150:
-  ; 748 continue;
-  jmp l131
+  ; 750 dropPath(); continue;
+  call dropPath
 l151:
-  ; 749 cursor_left(); continue;
-  call cursor_left
-  ; 749 continue;
-  jmp l131
+  ; 750 continue;
+  jmp l132
 l152:
-  ; 750 cursor_right(); continue; 
-  call cursor_right
-  ; 750 continue; 
-  jmp l131
-l153:
-  ; 751 cursor_down(); continue;
-  call cursor_down
+  ; 751 cursor_left(); continue;
+  call cursor_left
   ; 751 continue;
-  jmp l131
-l154:
-  ; 752 cursor_up(); continue; 
-  call cursor_up
+  jmp l132
+l153:
+  ; 752 cursor_right(); continue; 
+  call cursor_right
   ; 752 continue; 
-  jmp l131
+  jmp l132
+l154:
+  ; 753 cursor_down(); continue;
+  call cursor_down
+  ; 753 continue;
+  jmp l132
 l155:
-  ; 753 cmd_tab();  continue; 
+  ; 754 cursor_up(); continue; 
+  call cursor_up
+  ; 754 continue; 
+  jmp l132
+l156:
+  ; 755 cmd_tab();  continue; 
   call cmd_tab
-  ; 753 continue; 
-  jmp l131
-l133:
-  ; 756 cmd_char(c);
+  ; 755 continue; 
+  jmp l132
+l134:
+  ; 758 cmd_char(c);
   lda main_c
   call cmd_char
-  jmp l131
-l132:
+  jmp l132
+l133:
   ret
   ; --- graphXor -----------------------------------------------------------------
 graphXor:
@@ -2856,7 +2856,7 @@ fillRect1:
   lhld fillRect1_2
   mov a, l
   ora h
-  jnz l156
+  jnz l157
   ; 103 fillRect1_int(h, l & r, a);
   lda fillRect1_5
   sta fillRect1_int_1
@@ -2867,7 +2867,7 @@ fillRect1:
   lhld fillRect1_1
   jmp fillRect1_int
   ; 104 return;
-l156:
+l157:
   ; 106 --c;  
   lhld fillRect1_2
   dcx h
@@ -2885,12 +2885,12 @@ l156:
   dad d
   shld fillRect1_1
   ; 109 for(; c; --c) {  
-l157:
+l158:
   ; convertToConfition
   lhld fillRect1_2
   mov a, l
   ora h
-  jz l158
+  jz l159
   ; 110 fillRect1_int(h, 0xFF, a);
   lda fillRect1_5
   sta fillRect1_int_1
@@ -2903,12 +2903,12 @@ l157:
   lhld fillRect1_1
   dad d
   shld fillRect1_1
-l159:
+l160:
   lhld fillRect1_2
   dcx h
   shld fillRect1_2
-  jmp l157
-l158:
+  jmp l158
+l159:
   ; 113 fillRect1_int(h, r, a);
   lda fillRect1_5
   sta fillRect1_int_1
@@ -3132,34 +3132,34 @@ print1:
   ani 127
   sta print1_3
   ; 272 while(1) { 
-l160:
+l161:
   ; 273 if(n == 0) return;     
   lda print1_3
   ora a
-  jnz l162
+  jnz l163
   ; 273 return;     
   ret
-l162:
+l163:
   ; 274 c = *text;
   lhld print1_4
   mov a, m
   sta print1_c
   ; 275 if(c) ++text; else if(!e) return;convertToConfition
   ora a
-  jz l163
+  jz l164
   ; 275 ++text; else if(!e) return;
   inx h
   shld print1_4
-  jmp l164
-l163:
+  jmp l165
+l164:
   ; 275 if(!e) return;convertToConfition
   lda print1_e
   ora a
-  jnz l165
+  jnz l166
   ; 275 return;
   ret
+l166:
 l165:
-l164:
   ; 276 s = chargen + c*8;
   lhld print1_c
   mvi h, 0
@@ -3174,15 +3174,15 @@ l164:
   ; 277 switch(st) {
   lda print1_2
   ora a
-  jz l167
-  cpi 1
   jz l168
-  cpi 2
+  cpi 1
   jz l169
-  cpi 3
+  cpi 2
   jz l170
-  jmp l166
-l167:
+  cpi 3
+  jz l171
+  jmp l167
+l168:
   ; 278 print_p1(d, s); ++st; break;
   lhld print1_1
   shld print_p1_1
@@ -3192,8 +3192,8 @@ l167:
   lxi h, print1_2
   inr m
   ; 278 break;
-  jmp l166
-l168:
+  jmp l167
+l169:
   ; 279 print_p2(d, s); ++st; d += 0x100; break;
   lhld print1_1
   shld print_p2_1
@@ -3208,8 +3208,8 @@ l168:
   dad d
   shld print1_1
   ; 279 break;
-  jmp l166
-l169:
+  jmp l167
+l170:
   ; 280 print_p3(d, s); ++st; d += 0x100; break;
   lhld print1_1
   shld print_p3_1
@@ -3224,8 +3224,8 @@ l169:
   dad d
   shld print1_1
   ; 280 break;
-  jmp l166
-l170:
+  jmp l167
+l171:
   ; 281 print_p4(d, s); st=0; d += 0x100; break;
   lhld print1_1
   shld print_p4_1
@@ -3240,12 +3240,12 @@ l170:
   dad d
   shld print1_1
   ; 281 break;
-l166:
+l167:
   ; 283 --n;
   lxi h, print1_3
   dcr m
-  jmp l160
-l161:
+  jmp l161
+l162:
   ret
   ; --- rect1 -----------------------------------------------------------------
 rect1:
@@ -3426,13 +3426,13 @@ scroll:
   xchg
   lhld scroll_2
   call op_cmp16
-  jnc l171
+  jnc l172
   ; 307 for(; w; --w, d+=0x100, s+=0x100)
-l172:
+l173:
   ; convertToConfition
   lda scroll_3
   ora a
-  jz l173
+  jz l174
   ; 308 memcpy_back(d, s, h);
   lhld scroll_1
   shld memcpy_back_1
@@ -3441,7 +3441,7 @@ l172:
   lhld scroll_4
   mvi h, 0
   call memcpy_back
-l174:
+l175:
   lxi h, scroll_3
   dcr m
   ; Сложение
@@ -3454,15 +3454,15 @@ l174:
   lhld scroll_2
   dad d
   shld scroll_2
-  jmp l172
-l173:
-l171:
+  jmp l173
+l174:
+l172:
   ; 310 for(; w; --w, d+=0x100, s+=0x100)
-l175:
+l176:
   ; convertToConfition
   lda scroll_3
   ora a
-  jz l176
+  jz l177
   ; 311 memcpy(d, s, h);
   lhld scroll_1
   shld memcpy_1
@@ -3471,7 +3471,7 @@ l175:
   lhld scroll_4
   mvi h, 0
   call memcpy
-l177:
+l178:
   lxi h, scroll_3
   dcr m
   ; Сложение
@@ -3484,8 +3484,8 @@ l177:
   lhld scroll_2
   dad d
   shld scroll_2
-  jmp l175
-l176:
+  jmp l176
+l177:
   ret
   ; --- numberOfBit -----------------------------------------------------------------
 numberOfBit:
@@ -3509,13 +3509,13 @@ getch1:
   ; 1 (*(uchar*)0xF803)
   lxi h, 63491
   mvi m, 145
-l178:
-  ; 65 while(1) {
 l179:
+  ; 65 while(1) {
+l180:
   ; 66 i = 6;
   mvi b, 6
   ; 67 while(1) {
-l181:
+l182:
   ; 68 --i;
   dcr b
   ; 1 (*(uchar*)0xF801)Сложение
@@ -3530,34 +3530,34 @@ l181:
   sta getch1_b
   ; 71 if(b != 0xFF) { u = 4; break; }
   cpi 255
-  jz l183
+  jz l184
   ; 71 u = 4; break; }
   mvi c, 4
   ; 71 break; }
-  jmp l182
-l183:
+  jmp l183
+l184:
   ; 72 b = KEYB2 | 0xF0;
   lda 63490
   ori 240
   sta getch1_b
   ; 73 if(b != 0xFF) { u = -4; break; }
   cpi 255
-  jz l184
+  jz l185
   ; 73 u = -4; break; }
   mvi c, 252
   ; 73 break; }
-  jmp l182
-l184:
+  jmp l183
+l185:
   ; 74 if(i) continue;convertToConfition
   mov a, b
   ora a
-  jnz l181
+  jnz l182
   mvi b, 6
   ; 76 prevCh = -1;
   mvi a, 255
   sta prevCh
-  jmp l181
-l182:
+  jmp l182
+l183:
   ; 78 b = numberOfBit(b) + u + i $ 12;
   lda getch1_b
   call numberOfBit
@@ -3577,48 +3577,48 @@ l182:
   lxi h, getch1_b
   lda prevCh
   cmp m
-  jnz l180
-  jmp l179
-l180:
+  jnz l181
+  jmp l180
+l181:
   ; 82 prevCh = b;
   lda getch1_b
   sta prevCh
   ; 84 if(b==12) {
   lda getch1_b
   cpi 12
-  jnz l187
+  jnz l188
   ; 85 rus = !rus;convertToConfition
   lda rus
   ora a
   sui 1
   sbb a
   sta rus
-  jmp l178
-l187:
+  jmp l179
+l188:
   ; 89 if(b>=24) {
   lda getch1_b
   cpi 24
-  jc l188
+  jc l189
   ; 90 if(shiftPressed()) b += 12*4;
   call shiftPressed
   ; convertToConfition
   ora a
-  jz l189
+  jz l190
   ; 90 b += 12*4;
   lda getch1_b
   adi 48
   sta getch1_b
-l189:
+l190:
   ; 91 if(rus) b += 12*8;convertToConfition
   lda rus
   ora a
-  jz l190
+  jz l191
   ; 91 b += 12*8;
   lda getch1_b
   adi 96
   sta getch1_b
-l190:
-l188:
+l191:
+l189:
   ; 94 return scanCodes[b];Сложение
   lhld getch1_b
   mvi h, 0
@@ -3652,7 +3652,7 @@ cmd_copy:
   sta cmd_copy_e
   ; convertToConfition
   ora a
-  jz l191
+  jz l192
   ; 14 drawError("ЌҐў®§¬®¦­® ®вЄалвм Ёбе®¤­л© д ©«", e); return 1 /*ЃҐ§ ЇҐаҐ§ Јаг§ЄЁ д ©«®ў*/; } 
   lxi h, string9
   shld drawError_1
@@ -3661,7 +3661,7 @@ cmd_copy:
   ; 14 return 1 /*ЃҐ§ ЇҐаҐ§ Јаг§ЄЁ д ©«®ў*/; } 
   mvi a, 1
   ret
-l191:
+l192:
   ; 17 drawWindow(" Љ®ЇЁа®ў ­ЁҐ ");
   lxi h, string10
   call drawWindow
@@ -3715,7 +3715,7 @@ l191:
   sta cmd_copy_e
   ; convertToConfition
   ora a
-  jz l192
+  jz l193
   ; 25 drawError("ЋиЁЎЄ  звҐ­Ёп д ©« ", e); return 1 /*ЃҐ§ ЇҐаҐ§ Јаг§ЄЁ д ©«®ў*/; } 
   lxi h, string14
   shld drawError_1
@@ -3724,7 +3724,7 @@ l191:
   ; 25 return 1 /*ЃҐ§ ЇҐаҐ§ Јаг§ЄЁ д ©«®ў*/; } 
   mvi a, 1
   ret
-l192:
+l193:
   ; 26 i2s32(buf, 10, &fs_result, ' ');
   lxi h, cmd_copy_buf
   shld i2s32_1
@@ -3757,7 +3757,7 @@ l192:
   sta cmd_copy_e
   ; convertToConfition
   ora a
-  jz l193
+  jz l194
   ; 31 drawError("ЋиЁЎЄ  fs_swap 1", e); return 1 /*ЃҐ§ ЇҐаҐ§ Јаг§ЄЁ д ©«®ў*/; } 
   lxi h, string16
   shld drawError_1
@@ -3766,14 +3766,14 @@ l192:
   ; 31 return 1 /*ЃҐ§ ЇҐаҐ§ Јаг§ЄЁ д ©«®ў*/; } 
   mvi a, 1
   ret
-l193:
+l194:
   ; 32 if(e = fs_create(to)) { drawError("ЌҐў®§¬®¦­® б®§¤ вм д ©«", e); return 1 /*ЃҐ§ ЇҐаҐ§ Јаг§ЄЁ д ©«®ў*/; } 
   lhld cmd_copy_2
   call fs_create
   sta cmd_copy_e
   ; convertToConfition
   ora a
-  jz l194
+  jz l195
   ; 32 drawError("ЌҐў®§¬®¦­® б®§¤ вм д ©«", e); return 1 /*ЃҐ§ ЇҐаҐ§ Јаг§ЄЁ д ©«®ў*/; } 
   lxi h, string17
   shld drawError_1
@@ -3782,9 +3782,9 @@ l193:
   ; 32 return 1 /*ЃҐ§ ЇҐаҐ§ Јаг§ЄЁ д ©«®ў*/; } 
   mvi a, 1
   ret
-l194:
-  ; 35 while(1) {
 l195:
+  ; 35 while(1) {
+l196:
   ; 39 i2s32(buf, 10, (ulong*)&progress_l, ' ');
   lxi h, cmd_copy_buf
   shld i2s32_1
@@ -3808,15 +3808,15 @@ l195:
   sta cmd_copy_e
   ; convertToConfition
   ora a
-  jz l197
+  jz l198
   ; 43 drawError("ЋиЁЎЄ  fs_swap 3", e); break; }
   lxi h, string18
   shld drawError_1
   lda cmd_copy_e
   call drawError
   ; 43 break; }
-  jmp l196
-l197:
+  jmp l197
+l198:
   ; 44 if(e = fs_read(panelA.files1, (MAX_FILES*sizeof(FileInfo)) & ~511) ) { drawError("ЋиЁЎЄ  звҐ­Ёп д ©« ", e); break; }
   lhld panelA
   shld fs_read_1
@@ -3825,38 +3825,38 @@ l197:
   sta cmd_copy_e
   ; convertToConfition
   ora a
-  jz l198
+  jz l199
   ; 44 drawError("ЋиЁЎЄ  звҐ­Ёп д ©« ", e); break; }
   lxi h, string14
   shld drawError_1
   lda cmd_copy_e
   call drawError
   ; 44 break; }
-  jmp l196
-l198:
+  jmp l197
+l199:
   ; 45 if(fs_low == 0) return 0; /* ‘ ЇҐаҐ§ Јаг§Є®© д ©«®ў */;Сложение с константой 0
   lhld fs_low
   mov a, l
   ora h
-  jnz l199
+  jnz l200
   ; 45 return 0; /* ‘ ЇҐаҐ§ Јаг§Є®© д ©«®ў */;
   xra a
   ret
-l199:
+l200:
   ; 46 if(e = fs_swap()) { drawError("ЋиЁЎЄ  fs_swap 2", e); break; }
   call fs_swap
   sta cmd_copy_e
   ; convertToConfition
   ora a
-  jz l200
+  jz l201
   ; 46 drawError("ЋиЁЎЄ  fs_swap 2", e); break; }
   lxi h, string19
   shld drawError_1
   lda cmd_copy_e
   call drawError
   ; 46 break; }
-  jmp l196
-l200:
+  jmp l197
+l201:
   ; 47 if(e = fs_write(panelA.files1, fs_low)) { drawError("ЋиЁЎЄ  § ЇЁбЁ д ©« ", e); break; }
   lhld panelA
   shld fs_write_1
@@ -3865,15 +3865,15 @@ l200:
   sta cmd_copy_e
   ; convertToConfition
   ora a
-  jz l201
+  jz l202
   ; 47 drawError("ЋиЁЎЄ  § ЇЁбЁ д ©« ", e); break; }
   lxi h, string20
   shld drawError_1
   lda cmd_copy_e
   call drawError
   ; 47 break; }
-  jmp l196
-l201:
+  jmp l197
+l202:
   ; 50 asm {
       lhld fs_low
       xchg
@@ -3886,8 +3886,8 @@ l201:
       shld cmd_copy_progress_h
 fs_copy_l2:
     
-  jmp l195
-l196:
+  jmp l196
+l197:
   ; 65 fs_delete(to);
   lhld cmd_copy_2
   call fs_delete
@@ -3899,29 +3899,29 @@ getName:
   shld getName_1
   ; 74 for(p = name; *p; p++)
   shld getName_p
-l202:
+l203:
   ; convertToConfition
   lhld getName_p
   xra a
   ora m
-  jz l203
+  jz l204
   ; 75 if(*p == '/')
   mov a, m
   cpi 47
-  jnz l205
+  jnz l206
   ; 76 name = p+1;Сложение с константой 1
   inx h
   shld getName_1
+l206:
 l205:
-l204:
   lhld getName_p
   mov d, h
   mov e, l
   inx h
   shld getName_p
   xchg
-  jmp l202
-l203:
+  jmp l203
+l204:
   ; 77 return name;
   lhld getName_1
   ret
@@ -3930,12 +3930,12 @@ cmd_copymove:
   sta cmd_copymove_1
   ; 88 title = copymode ? " Љ®ЇЁа®ў ­ЁҐ " : " ЏҐаҐЁ¬Ґ­®ў ­ЁҐ/ЏҐаҐ­®б ";
   ora a
-  jz l206
+  jz l207
   lxi h, string10
-  jmp l207
-l206:
-  lxi h, string21
+  jmp l208
 l207:
+  lxi h, string21
+l208:
   shld cmd_copymove_title
   ; 91 addPath1(A_CMDLINE);
   mvi a, 1
@@ -3943,10 +3943,10 @@ l207:
   ; 92 if(cmdline[0] == 0) return;
   lda (cmdline)+(0)
   ora a
-  jnz l208
+  jnz l209
   ; 92 return;
   ret
-l208:
+l209:
   ; 94 strcpy(buf, cmdline);
   lxi h, cmd_copymove_buf
   shld strcpy_1
@@ -3956,7 +3956,7 @@ l208:
   call shiftPressed
   ; convertToConfition
   ora a
-  jz l209
+  jz l210
   ; 98 getSelectedName(cmdLine);
   lxi h, cmdline
   call getSelectedName
@@ -3964,8 +3964,8 @@ l208:
   lxi h, cmdline
   call strlen
   shld cmdline_pos
-  jmp l210
-l209:
+  jmp l211
+l210:
   ; 102 strcpy(cmdline, panelB.path);
   lxi h, cmdline
   shld strcpy_1
@@ -3979,21 +3979,21 @@ l209:
   dcx h
   mov a, l
   ora h
-  jz l211
+  jz l212
   ; 108 if(cmdline_pos == 255) { // ЃгдҐа ЇҐаҐЇ®«­Ґ­ Сложение
   lhld cmdline_pos
   lxi d, 65281
   dad d
   mov a, l
   ora h
-  jnz l212
+  jnz l213
   ; 109 drawError(title, ERR_RECV_STRING);
   lhld cmd_copymove_title
   shld drawError_1
   mvi a, 11
   call drawError
-  jmp l213
-l212:
+  jmp l214
+l213:
   ; 112 strcpy(cmdline+cmdline_pos, "/");Сложение
   lhld cmdline_pos
   lxi d, cmdline
@@ -4005,8 +4005,8 @@ l212:
   lhld cmdline_pos
   inx h
   shld cmdline_pos
+l212:
 l211:
-l210:
   ; 118 e=1; 
   mvi a, 1
   sta cmd_copymove_e
@@ -4015,7 +4015,7 @@ l210:
   call inputBox
   ; convertToConfition
   ora a
-  jz l214
+  jz l215
   ; 124 if(cmdline[cmdline_pos - 1] == '/') {      Сложение с константой -1
   lhld cmdline_pos
   dcx h
@@ -4024,7 +4024,7 @@ l210:
   dad d
   mov a, m
   cpi 47
-  jnz l215
+  jnz l216
   ; 125 name = getName(buf);
   lxi h, cmd_copymove_buf
   call getName
@@ -4038,14 +4038,14 @@ l210:
   ; Сложение
   lxi d, 65280
   dad d
-  jnc l216
+  jnc l217
   ; 127 drawError(title, ERR_RECV_STRING);
   lhld cmd_copymove_title
   shld drawError_1
   mvi a, 11
   call drawError
-  jmp l213
-l216:
+  jmp l214
+l217:
   ; 130 strcpy(cmdline + cmdline_pos, name);Сложение
   lhld cmdline_pos
   lxi d, cmdline
@@ -4053,21 +4053,21 @@ l216:
   shld strcpy_1
   lhld cmd_copymove_name
   call strcpy
-l215:
+l216:
   ; 134 absolutePath();
   call absolutePath
   ; 136 if(copymode) {convertToConfition
   lda cmd_copymove_1
   ora a
-  jz l217
+  jz l218
   ; 137 e = cmd_copy(buf, cmdline);
   lxi h, cmd_copymove_buf
   shld cmd_copy_1
   lxi h, cmdline
   call cmd_copy
   sta cmd_copymove_e
-  jmp l218
-l217:
+  jmp l219
+l218:
   ; 140 e = fs_move(buf, cmdline);
   lxi h, cmd_copymove_buf
   shld fs_move_1
@@ -4078,12 +4078,12 @@ l217:
   lxi h, string22
   shld drawError_1
   call drawError
-l218:
-l214:
+l219:
+l215:
   ; 150 if(!e) {convertToConfition
   lda cmd_copymove_e
   ora a
-  jnz l219
+  jnz l220
   ; 151 getFiles();
   call getFiles
   ; 152 swapPanels(); getFiles(); swapPanels();
@@ -4092,8 +4092,8 @@ l214:
   call getFiles
   ; 152 swapPanels();
   call swapPanels
-l219:
-l213:
+l220:
+l214:
   ; 157 repairScreen(0);
   xra a
   jmp repairScreen
@@ -4116,11 +4116,11 @@ cmd_run:
   sta cmd_run_2
   ; 19 if(selectedFile) getSelectedName(cmdline);convertToConfition
   ora a
-  jz l220
+  jz l221
   ; 19 getSelectedName(cmdline);
   lxi h, cmdline
   call getSelectedName
-l220:
+l221:
   ; 22 c = cmdLine;
   lxi h, cmdline
   shld cmd_run_c
@@ -4128,7 +4128,7 @@ l220:
   lhld cmd_run_1
   mov a, l
   ora h
-  jnz l221
+  jnz l222
   ; 28 absolutePath();
   call absolutePath
   ; 31 prog = cmdLine;
@@ -4142,18 +4142,18 @@ l220:
   ; 33 if(c) *c=0, ++c; else c="";convertToConfition
   mov a, l
   ora h
-  jz l222
+  jz l223
   ; 33 *c=0, ++c; else c="";
   mvi m, 0
   inx h
   shld cmd_run_c
-  jmp l223
-l222:
+  jmp l224
+l223:
   ; 33 c="";
   lxi h, string0
   shld cmd_run_c
-l223:
-l221:
+l224:
+l222:
   ; 36 cmd_run2(prog, c);
   lhld cmd_run_1
   shld cmd_run2_1
@@ -4166,29 +4166,29 @@ cmd_new:
   ; 12 title = dir ? " ‘®§¤ ­ЁҐ Ї ЇЄЁ " : " ‘®§¤ ­ЁҐ д ©«  ";
   lda cmd_new_1
   ora a
-  jz l224
+  jz l225
   lxi h, string23
-  jmp l225
-l224:
-  lxi h, string24
+  jmp l226
 l225:
+  lxi h, string24
+l226:
   shld cmd_new_title
   ; 13 if(inputBox(title)) {
   call inputBox
   ; convertToConfition
   ora a
-  jz l226
+  jz l227
   ; 16 if(cmdline_pos) {    convertToConfition
   lhld cmdline_pos
   mov a, l
   ora h
-  jz l227
+  jz l228
   ; 19 absolutePath();
   call absolutePath
   ; 21 if(dir) {convertToConfition
   lda cmd_new_1
   ora a
-  jz l228
+  jz l229
   ; 23 e = fs_mkdir(cmdline);
   lxi h, cmdline
   call fs_mkdir
@@ -4200,22 +4200,22 @@ l225:
   shld drawError_1
   lda cmd_new_e
   call drawError
-  jmp l230
-l228:
+  jmp l231
+l229:
   ; 32 if(cmdline_pos==255) { Сложение
   lhld cmdline_pos
   lxi d, 65281
   dad d
   mov a, l
   ora h
-  jnz l231
+  jnz l232
   ; 33 drawError("ЋиЁЎЄ  б®§¤ ­Ёп д ©« ", ERR_RECV_STRING);
   lxi h, string26
   shld drawError_1
   mvi a, 11
   call drawError
-  jmp l232
-l231:
+  jmp l233
+l232:
   ; 39 drawError("ЋиЁЎЄ  б®§¤ ­Ёп д ©« ", fs_create(cmdline));
   lxi h, string26
   shld drawError_1
@@ -4223,10 +4223,10 @@ l231:
   call fs_create
   jmp drawError
   ; 42 return; // ’ ¬ ўл§лў Ґвбп repairScreen
-l232:
-l230:
+l233:
+l231:
+l228:
 l227:
-l226:
   ; 52 repairScreen(0);
   xra a
   jmp repairScreen
@@ -4320,14 +4320,14 @@ cmd_freespace:
   sta cmd_freespace_e
   ; convertToConfition
   ora a
-  jz l233
+  jz l234
   ; 23 drawError("ЋиЁЎЄ  звҐ­Ёп ¤ЁбЄ ", e);
   lxi h, string31
   shld drawError_1
   lda cmd_freespace_e
   call drawError
-  jmp l234
-l233:
+  jmp l235
+l234:
   ; 27 graph1();
   call graph1
   ; 28 print(19, 10, 27|0x80, "");
@@ -4348,16 +4348,16 @@ l233:
   call fs_gettotal
   ; convertToConfition
   ora a
-  jnz l235
+  jnz l236
   ; 32 cmd_freespace_1(10, "‚бҐЈ®:");
   mvi a, 10
   sta cmd_freespace_1_1
   lxi h, string33
   call cmd_freespace_1
-l235:
+l236:
   ; 35 getch1();
   call getch1
-l234:
+l235:
   ; 39 repairScreen(0);
   xra a
   jmp repairScreen
@@ -4367,11 +4367,11 @@ cmd_delete:
   ; 8 if(cmdline[0]==0) { 
   lda (cmdline)+(0)
   ora a
-  jnz l236
+  jnz l237
   ; 9 clearCmdLine();
   jmp clearCmdLine
   ; 10 return;
-l236:
+l237:
   ; 12 cmdLine_pos = strlen(cmdLine);
   lxi h, cmdline
   call strlen
@@ -4381,7 +4381,7 @@ l236:
   call inputBox
   ; convertToConfition
   ora a
-  jz l237
+  jz l238
   ; 18 absolutePath();
   call absolutePath
   ; 21 e = fs_delete(cmdline);
@@ -4395,7 +4395,7 @@ l236:
   shld drawError_1
   lda cmd_delete_e
   call drawError
-l237:
+l238:
   ; 31 repairScreen(0);
   xra a
   jmp repairScreen
@@ -4407,7 +4407,7 @@ drawWindow:
   lxi h, 48
   shld drawWindow_i
   ; 10 while(1) {
-l239:
+l240:
   ; 12 fillRect(56+i+i, 60+i, 326-i-i, 165-i);Сложение
   lxi d, 56
   dad d
@@ -4455,7 +4455,7 @@ l239:
   lhld drawWindow_i
   mov a, l
   ora h
-  jz l240
+  jz l241
   mov a, l
   sui 8
   mov l, a
@@ -4463,8 +4463,8 @@ l239:
   sbi 0
   mov h, a
   shld drawWindow_i
-  jmp l239
-l240:
+  jmp l240
+l241:
   ; 16 graph0();
   call graph0
   ; 17 rect1(RECTARGS(70,85-10,314,140+10));
@@ -4542,13 +4542,13 @@ drawInput:
   lhld drawInput_3
   mvi h, 0
   call op_cmp16
-  jc l242
-  jz l242
+  jc l243
+  jz l243
   ; 30 cmdline_offset = 0; else cmdline_offset = cmdline_pos-max;
   lxi h, 0
   shld cmdline_offset
-  jmp l243
-l242:
+  jmp l244
+l243:
   ; 30 cmdline_offset = cmdline_pos-max;16 битная арифметическая операция с константой
   lhld drawInput_3
   mvi h, 0
@@ -4561,7 +4561,7 @@ l242:
   sbb d
   mov h, a
   shld cmdline_offset
-l243:
+l244:
   ; 31 c1 = cmdline_pos - cmdline_offset;16 битная арифметическая операция с константой
   lhld cmdline_offset
   xchg
@@ -4594,12 +4594,12 @@ l243:
   lhld drawInput_3
   mvi h, 0
   call op_cmp16
-  jnc l244
+  jnc l245
   ; 35 c1 = max;
   lhld drawInput_3
   mvi h, 0
   shld drawInput_c1
-l244:
+l245:
   ; 36 ++c1;
   lhld drawInput_c1
   inx h
@@ -4634,15 +4634,15 @@ processInput:
   sta processInput_1
   ; 45 if(c==8) {
   cpi 8
-  jnz l245
+  jnz l246
   ; 46 if(cmdline_pos==0) return;Сложение с константой 0
   lhld cmdline_pos
   mov a, l
   ora h
-  jnz l246
+  jnz l247
   ; 46 return;
   ret
-l246:
+l247:
   ; 47 --cmdline_pos;    
   dcx h
   shld cmdline_pos
@@ -4650,23 +4650,23 @@ l246:
   lxi d, cmdline
   dad d
   mvi m, 0
-l245:
+l246:
   ; 50 if(c>=32 && c<0xF0) {
   lda processInput_1
   cpi 32
-  jc l247
+  jc l248
   cpi 240
-  jnc l247
+  jnc l248
   ; 51 if(cmdline_pos==255) return; Сложение
   lhld cmdline_pos
   lxi d, 65281
   dad d
   mov a, l
   ora h
-  jnz l248
+  jnz l249
   ; 51 return; 
   ret
-l248:
+l249:
   ; 52 cmdline[cmdline_pos] = c;Сложение
   lhld cmdline_pos
   lxi d, cmdline
@@ -4681,26 +4681,26 @@ l248:
   lxi d, cmdline
   dad d
   mvi m, 0
-l247:
+l248:
   ret
   ; --- drawError -----------------------------------------------------------------
 drawError:
   sta drawError_2
   ; 73 if(e==0) return;
   ora a
-  jnz l249
+  jnz l250
   ; 73 return;
   ret
-l249:
+l250:
   ; 75 old=graphOffset;
   lhld graphOffset
   shld drawError_old
   ; 76 graphOffset=0;
   lxi h, 0
   shld graphOffset
-  ; 1 *(uchar*)(0xFFFE)=(C); }
-  lxi h, 65534
-  mvi m, 80
+  ; 78 setColor(COLOR_RED);
+  mvi a, 80
+  call setColor
   ; 79 drawWindow(" ЋиЁЎЄ  ");
   lxi h, string44
   call drawWindow
@@ -4785,12 +4785,12 @@ inputBox:
   mvi a, 12
   call fillRect1
   ; 111 while(1) {
-l250:
+l251:
   ; 112 graph0();
   call graph0
-  ; 1 *(uchar*)(0xFFFE)=(C); }
-  lxi h, 65534
-  mvi m, 128
+  ; 113 setColor(COLOR_CYAN);
+  mvi a, 128
+  call setColor
   ; 114 drawInput(PRINTARGS(16, 11), 32);
   lxi h, 40047
   shld drawInput_1
@@ -4803,30 +4803,30 @@ l250:
   sta inputBox_c
   ; 117 if(c==13) { graphOffset=old; return 1; }
   cpi 13
-  jnz l252
+  jnz l253
   ; 117 graphOffset=old; return 1; }
   lhld inputBox_old
   shld graphOffset
   ; 117 return 1; }
   mvi a, 1
   ret
-l252:
+l253:
   ; 118 if(c==27) { graphOffset=old; return 0; }
   lda inputBox_c
   cpi 27
-  jnz l253
+  jnz l254
   ; 118 graphOffset=old; return 0; }
   lhld inputBox_old
   shld graphOffset
   ; 118 return 0; }
   xra a
   ret
-l253:
+l254:
   ; 119 processInput(c);
   lda inputBox_c
   call processInput
-  jmp l250
-l251:
+  jmp l251
+l252:
   ret
   ; --- inputBoxR -----------------------------------------------------------------
 inputBoxR:
@@ -5055,6 +5055,14 @@ op_cmp16:
     cmp e
   
   ret
+  ; --- setColor -----------------------------------------------------------------
+setColor:
+  sta setColor_1
+  ; 2 asm { 
+ 
+    STA 0FFFEh
+  
+  ret
   ; --- i2s32 -----------------------------------------------------------------
 i2s32:
   sta i2s32_4
@@ -5083,7 +5091,7 @@ i2s32:
   xchg
   shld div32_h
   ; 11 while(1) {
-l254:
+l255:
   ; 12 div32(10);
   lxi h, 10
   call div32
@@ -5105,25 +5113,25 @@ l254:
   ; Сложение с константой 0
   mov a, l
   ora h
-  jnz l256
+  jnz l257
   ; 15 return;
   ret
-l256:
+l257:
   ; 16 if(div32_l == 0 && div32_h == 0) break;Сложение с константой 0
   lhld div32_l
   mov a, l
   ora h
-  jnz l257
+  jnz l258
   ; Сложение с константой 0
   lhld div32_h
   mov a, l
   ora h
-  jz l255
-l257:
-  jmp l254
-l255:
-  ; 19 while(1) {
+  jz l256
 l258:
+  jmp l255
+l256:
+  ; 19 while(1) {
+l259:
   ; 20 --buf;
   lhld i2s32_1
   dcx h
@@ -5138,9 +5146,9 @@ l258:
   ; Сложение с константой 0
   mov a, l
   ora h
-  jz l259
-  jmp l258
-l259:
+  jz l260
+  jmp l259
+l260:
   ret
   ; --- i2s -----------------------------------------------------------------
 i2s:
@@ -5154,7 +5162,7 @@ i2s:
   ; 5 *buf = 0;
   mvi m, 0
   ; 6 while(1) {
-l261:
+l262:
   ; 7 v /= 10;
   lxi d, 10
   lhld i2s_2
@@ -5178,19 +5186,19 @@ l261:
   ; 11 if(n == 0) return;Сложение с константой 0
   mov a, l
   ora h
-  jnz l263
+  jnz l264
   ; 11 return;
   ret
-l263:
+l264:
   ; 12 if(v == 0) break;Сложение с константой 0
   lhld i2s_2
   mov a, l
   ora h
-  jz l262
-  jmp l261
-l262:
+  jz l263
+  jmp l262
+l263:
   ; 14 while(1) {
-l265:
+l266:
   ; 15 --buf;
   lhld i2s_1
   dcx h
@@ -5205,9 +5213,9 @@ l265:
   ; Сложение с константой 0
   mov a, l
   ora h
-  jz l266
-  jmp l265
-l266:
+  jz l267
+  jmp l266
+l267:
   ret
   ; --- op_shr16 -----------------------------------------------------------------
 op_shr16:
@@ -5327,14 +5335,14 @@ fs_findfirst:
   lhld fs_findfirst_1
   mov a, m
   cpi 47
-  jnz l268
+  jnz l269
   ; 4 path++;
   mov d, h
   mov e, l
   inx h
   shld fs_findfirst_1
   xchg
-l268:
+l269:
   ; 5 asm {
     PUSH B
     ; hl = fs_findfirst_3
@@ -5371,6 +5379,24 @@ fs_entry:
 fs_entry_n:
     JMP 0000h
   
+  ret
+  ; --- setColorAutoDisable -----------------------------------------------------------------
+setColorAutoDisable:
+  lxi h, 49152
+  shld memchr8_1
+  mvi a, 251
+  sta memchr8_2
+  mvi a, 16
+  call memchr8
+  ; Сложение с константой 0
+  mov a, l
+  ora h
+  jnz l270
+  ; 5 asm {
+      MVI A, 0C9h
+      STA setColor
+    
+l270:
   ret
   ; --- clrscr -----------------------------------------------------------------
 clrscr:
@@ -5556,6 +5582,26 @@ div32:
   call op_div16
   mov a, l
   sta (div32_l)+(0)
+  ret
+  ; --- memchr8 -----------------------------------------------------------------
+memchr8:
+  sta memchr8_3
+  ; 2 asm {
+    ; lda memchr8_3
+    mov d, a
+    lda memchr8_2
+    lhld memchr8_1
+memchr8_l1:
+    ; *dest = *src    
+    cmp m
+    rz
+    inx h
+    dcr d
+    jnz memchr8_l1
+    xra a
+    mov h, a
+    mov l, a
+  
   ret
   ; --- putch -----------------------------------------------------------------
 putch:
@@ -6264,6 +6310,8 @@ memcpy_3:
  .ds 2
 op_div16_mod:
  .ds 2
+setColor_1:
+ .ds 1
 i2s32_1:
  .ds 2
 i2s32_2:
@@ -6353,6 +6401,12 @@ div32_1:
 div32_tmp:
  .ds 2
 div32_am:
+ .ds 1
+memchr8_1:
+ .ds 2
+memchr8_2:
+ .ds 1
+memchr8_3:
  .ds 1
 putch_1:
  .ds 1

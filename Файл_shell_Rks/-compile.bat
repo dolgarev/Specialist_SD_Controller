@@ -7,7 +7,7 @@ type errors.txt
 del errors.txt >nul
 ..\C8080\tasm -gb -b -85 shell.asm shell.rks >errors.txt
 if errorlevel 1 goto err
-copy shell.rks \\book\e\boot\shell.rks
+rem copy shell.rks \\book\e\boot\shell.rks
 goto end
 :err
 type errors.txt
