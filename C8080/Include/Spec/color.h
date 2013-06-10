@@ -8,3 +8,6 @@
 #define COLOR_BLACK  0xD0
 
 #define SET_COLOR(C) { *(uchar*)(0xFFFE)=(C); }
+
+void setColor(char) @ "spec/setcolor.c";
+void setColorAutoDisable() @ "spec/setcolorautodisable.c";
