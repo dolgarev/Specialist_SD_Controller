@@ -393,6 +393,7 @@ void cmd_write() {
 
 #define TAPE_DELAY         (1000000/1400/2)
 #define TAPE               PORTC.1
+#define TAPE_ON            DDRC.1
 #define TAPE_PILOT_SIZE    32
 
 void tape(BYTE data) {
@@ -420,6 +421,8 @@ BYTE tapeEmulator() {
   if(fs_tmp > 512) goto abort;
   s = (WORD)fs_tmp; 
   if(fs_read0(buf, s)) goto abort;
+      
+  TAPE_ON = 1;
   
   i = TAPE_PILOT_SIZE;
   do {
@@ -432,6 +435,9 @@ BYTE tapeEmulator() {
   do {
     tape(*p++);
   } while(--s);
+
+  TAPE = 0;
+  TAPE_ON = 0;
     
   return 0;                   
 abort:
@@ -454,7 +460,7 @@ void main() {
   PORTD = 0xFF;
   DDRB  = 0b00101101; // MISO
   PORTB = 0b00010001; // Подтягивающий резистор на MISO  
-  DDRC  = 0b00000010; // TAPEEN, TAPE, PULSE
+  DDRC  = 0b00000000; // TAPEEN, TAPE, PULSE
   PORTC = 0b00000101; // TAPEEN, TAPE, PULSE
   
   // Пауза, пока не стабилизируется питание
