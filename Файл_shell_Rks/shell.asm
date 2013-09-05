@@ -2530,41 +2530,54 @@ l131:
   shld cmdline_pos
   ; 698 drawCmdLine();
   jmp drawCmdLine
+alt:
+  lhld cmdline_pos
+  mov a, l
+  ora h
+  jnz l132
+  ; 702 return 0;
+  xra a
+  ret
+l132:
+  ; 703 return shiftPressed();
+  jmp shiftPressed
+  ret
+  ; --- main -----------------------------------------------------------------
 main:
   call fs_init
-  ; 708 setColorAutoDisable();
+  ; 713 setColorAutoDisable();
   call setColorAutoDisable
-  ; 710 panelA.files1 = (FileInfo*)START_FILE_BUFFER;
+  ; 715 panelA.files1 = (FileInfo*)START_FILE_BUFFER;
   lxi h, 16384
   shld panelA
-  ; 711 panelB.files1 = ((FileInfo*)START_FILE_BUFFER)+MAX_FILES;
+  ; 716 panelB.files1 = ((FileInfo*)START_FILE_BUFFER)+MAX_FILES;
   lxi h, 23544
   shld panelB
-  ; 713 clrscr();
+  ; 718 clrscr();
   call clrscr
-  ; 719 graphOffset = 0;
+  ; 724 graphOffset = 0;
   lxi h, 0
   shld graphOffset
-  ; 720 cursorX1=0;
+  ; 725 cursorX1=0;
   shld cursorX1
-  ; 723 strcpy(panelA.path, "/");
+  ; 728 strcpy(panelA.path, "/");
   lxi h, (panelA)+(7)
   shld strcpy_1
   lxi h, string6
   call strcpy
-  ; 724 strcpy(panelB.path, "/");
+  ; 729 strcpy(panelB.path, "/");
   lxi h, (panelB)+(7)
   shld strcpy_1
   lxi h, string6
   call strcpy
-  ; 725 drawHelp();           
+  ; 730 drawHelp();           
   call drawHelp
-  ; 726 repairScreen(0);
+  ; 731 repairScreen(0);
   xra a
   call repairScreen
-  ; 729 getFiles();
+  ; 734 getFiles();
   call getFiles
-  ; 730 memcpy(panelB.files1, panelA.files1, panelA.cnt*sizeof(*panelA.files1));
+  ; 735 memcpy(panelB.files1, panelA.files1, panelA.cnt*sizeof(*panelA.files1));
   lhld panelB
   shld memcpy_1
   lhld panelA
@@ -2573,181 +2586,245 @@ main:
   lxi d, 20
   call op_mul16
   call memcpy
-  ; 731 panelB.cnt = panelA.cnt;
+  ; 736 panelB.cnt = panelA.cnt;
   lhld (panelA)+(263)
   shld (panelB)+(263)
-  ; 734 drawFiles2_go();
+  ; 739 drawFiles2_go();
   call drawFiles2_go
-  ; 736 while(1) {
-l132:
-  ; 737 c = getch1();
+  ; 741 while(1) {
+l133:
+  ; 742 c = getch1();
   call getch1
   sta main_c
-  ; 739 switch(c) {
+  ; 743 switch(c) {
   cpi 8
-  jz l135
-  cpi 243
   jz l136
-  cpi 244
+  cpi 49
   jz l137
-  cpi 245
-  jz l138
-  cpi 246
+  cpi 243
   jz l139
-  cpi 247
+  cpi 50
+  jz l140
+  cpi 244
   jz l142
-  cpi 248
+  cpi 51
   jz l143
-  cpi 249
-  jz l144
-  cpi 250
+  cpi 245
   jz l145
-  cpi 13
+  cpi 52
   jz l146
-  cpi 27
-  jz l149
-  cpi 25
-  jz l152
-  cpi 24
+  cpi 246
+  jz l148
+  cpi 53
+  jz l151
+  cpi 247
   jz l153
-  cpi 26
+  cpi 54
   jz l154
-  cpi 23
-  jz l155
-  cpi 9
+  cpi 248
   jz l156
-  jmp l134
-l135:
-  ; 740 cmd_bkspc(); continue;
-  call cmd_bkspc
-  ; 740 continue;
-  jmp l132
+  cpi 55
+  jz l157
+  cpi 249
+  jz l159
+  cpi 56
+  jz l160
+  cpi 250
+  jz l162
+  cpi 13
+  jz l163
+  cpi 27
+  jz l166
+  cpi 25
+  jz l169
+  cpi 24
+  jz l170
+  cpi 26
+  jz l171
+  cpi 23
+  jz l172
+  cpi 9
+  jz l173
+  jmp l135
 l136:
-  ; 741 cmd_freespace(); continue;
-  call cmd_freespace
-  ; 741 continue;
-  jmp l132
+  ; 744 cmd_bkspc(); continue;
+  call cmd_bkspc
+  ; 744 continue;
+  jmp l133
 l137:
-  ; 742 cmd_new(0); continue;
+  ; 745 if(!alt()) break;      
+  call alt
+  ; convertToConfition
+  ora a
+  jz l135
+l139:
+  ; 746 cmd_freespace(); continue;
+  call cmd_freespace
+  ; 746 continue;
+  jmp l133
+l140:
+  ; 747 if(!alt()) break;      
+  call alt
+  ; convertToConfition
+  ora a
+  jz l135
+l142:
+  ; 748 cmd_new(0); continue;
   xra a
   call cmd_new
-  ; 742 continue;
-  jmp l132
-l138:
-  ; 743 cmd_run("view.rks", 1); continue;
+  ; 748 continue;
+  jmp l133
+l143:
+  ; 749 if(!alt()) break;      
+  call alt
+  ; convertToConfition
+  ora a
+  jz l135
+l145:
+  ; 750 cmd_run("view.rks", 1); continue;
   lxi h, string7
   shld cmd_run_1
   mvi a, 1
   call cmd_run
-  ; 743 continue;
-  jmp l132
-l139:
-  ; 744 if(shiftPressed()) cmd_new(0); else cmd_run("edit.rks", 1); continue;
+  ; 750 continue;
+  jmp l133
+l146:
+  ; 751 if(!alt()) break;      
+  call alt
+  ; convertToConfition
+  ora a
+  jz l135
+l148:
+  ; 752 if(shiftPressed()) cmd_new(0); else cmd_run("edit.rks", 1); continue;
   call shiftPressed
   ; convertToConfition
   ora a
-  jz l140
-  ; 744 cmd_new(0); else cmd_run("edit.rks", 1); continue;
+  jz l149
+  ; 752 cmd_new(0); else cmd_run("edit.rks", 1); continue;
   xra a
   call cmd_new
-  jmp l141
-l140:
-  ; 744 cmd_run("edit.rks", 1); continue;
+  jmp l150
+l149:
+  ; 752 cmd_run("edit.rks", 1); continue;
   lxi h, string8
   shld cmd_run_1
   mvi a, 1
   call cmd_run
-l141:
-  ; 744 continue;
-  jmp l132
-l142:
-  ; 745 cmd_copymove(1); continue;
+l150:
+  ; 752 continue;
+  jmp l133
+l151:
+  ; 753 if(!alt()) break;      
+  call alt
+  ; convertToConfition
+  ora a
+  jz l135
+l153:
+  ; 754 cmd_copymove(1); continue;
   mvi a, 1
   call cmd_copymove
-  ; 745 continue;
-  jmp l132
-l143:
-  ; 746 cmd_copymove(0); continue;
+  ; 754 continue;
+  jmp l133
+l154:
+  ; 755 if(!alt()) break;      
+  call alt
+  ; convertToConfition
+  ora a
+  jz l135
+l156:
+  ; 756 cmd_copymove(0); continue;
   xra a
   call cmd_copymove
-  ; 746 continue;
-  jmp l132
-l144:
-  ; 747 cmd_new(1); continue;
+  ; 756 continue;
+  jmp l133
+l157:
+  ; 757 if(!alt()) break;      
+  call alt
+  ; convertToConfition
+  ora a
+  jz l135
+l159:
+  ; 758 cmd_new(1); continue;
   mvi a, 1
   call cmd_new
-  ; 747 continue;
-  jmp l132
-l145:
-  ; 748 cmd_delete(); continue;
+  ; 758 continue;
+  jmp l133
+l160:
+  ; 759 if(!alt()) break;      
+  call alt
+  ; convertToConfition
+  ora a
+  jz l135
+l162:
+  ; 760 cmd_delete(); continue;
   call cmd_delete
-  ; 748 continue;
-  jmp l132
-l146:
-  ; 749 if(cmdline_pos) cmd_run(0, 0); else addPath1(A_ENTER); continue;convertToConfition
+  ; 760 continue;
+  jmp l133
+l163:
+  ; 761 if(cmdline_pos) cmd_run(0, 0); else addPath1(A_ENTER); continue;convertToConfition
   lhld cmdline_pos
   mov a, l
   ora h
-  jz l147
-  ; 749 cmd_run(0, 0); else addPath1(A_ENTER); continue;
+  jz l164
+  ; 761 cmd_run(0, 0); else addPath1(A_ENTER); continue;
   lxi h, 0
   shld cmd_run_1
   xra a
   call cmd_run
-  jmp l148
-l147:
-  ; 749 addPath1(A_ENTER); continue;
+  jmp l165
+l164:
+  ; 761 addPath1(A_ENTER); continue;
   xra a
   call addPath1
-l148:
-  ; 749 continue;
-  jmp l132
-l149:
-  ; 750 if(cmdline_pos) clearCmdLine(); else dropPath(); continue;convertToConfition
+l165:
+  ; 761 continue;
+  jmp l133
+l166:
+  ; 762 if(cmdline_pos) clearCmdLine(); else dropPath(); continue;convertToConfition
   lhld cmdline_pos
   mov a, l
   ora h
-  jz l150
-  ; 750 clearCmdLine(); else dropPath(); continue;
+  jz l167
+  ; 762 clearCmdLine(); else dropPath(); continue;
   call clearCmdLine
-  jmp l151
-l150:
-  ; 750 dropPath(); continue;
+  jmp l168
+l167:
+  ; 762 dropPath(); continue;
   call dropPath
-l151:
-  ; 750 continue;
-  jmp l132
-l152:
-  ; 751 cursor_left(); continue;
+l168:
+  ; 762 continue;
+  jmp l133
+l169:
+  ; 763 cursor_left(); continue;
   call cursor_left
-  ; 751 continue;
-  jmp l132
-l153:
-  ; 752 cursor_right(); continue; 
+  ; 763 continue;
+  jmp l133
+l170:
+  ; 764 cursor_right(); continue; 
   call cursor_right
-  ; 752 continue; 
-  jmp l132
-l154:
-  ; 753 cursor_down(); continue;
+  ; 764 continue; 
+  jmp l133
+l171:
+  ; 765 cursor_down(); continue;
   call cursor_down
-  ; 753 continue;
-  jmp l132
-l155:
-  ; 754 cursor_up(); continue; 
+  ; 765 continue;
+  jmp l133
+l172:
+  ; 766 cursor_up(); continue; 
   call cursor_up
-  ; 754 continue; 
-  jmp l132
-l156:
-  ; 755 cmd_tab();  continue; 
+  ; 766 continue; 
+  jmp l133
+l173:
+  ; 767 cmd_tab();  continue; 
   call cmd_tab
-  ; 755 continue; 
-  jmp l132
-l134:
-  ; 758 cmd_char(c);
+  ; 767 continue; 
+  jmp l133
+l135:
+  ; 770 cmd_char(c);
   lda main_c
   call cmd_char
-  jmp l132
-l133:
+  jmp l133
+l134:
   ret
   ; --- graphXor -----------------------------------------------------------------
 graphXor:
@@ -2856,7 +2933,7 @@ fillRect1:
   lhld fillRect1_2
   mov a, l
   ora h
-  jnz l157
+  jnz l174
   ; 103 fillRect1_int(h, l & r, a);
   lda fillRect1_5
   sta fillRect1_int_1
@@ -2867,7 +2944,7 @@ fillRect1:
   lhld fillRect1_1
   jmp fillRect1_int
   ; 104 return;
-l157:
+l174:
   ; 106 --c;  
   lhld fillRect1_2
   dcx h
@@ -2885,12 +2962,12 @@ l157:
   dad d
   shld fillRect1_1
   ; 109 for(; c; --c) {  
-l158:
+l175:
   ; convertToConfition
   lhld fillRect1_2
   mov a, l
   ora h
-  jz l159
+  jz l176
   ; 110 fillRect1_int(h, 0xFF, a);
   lda fillRect1_5
   sta fillRect1_int_1
@@ -2903,12 +2980,12 @@ l158:
   lhld fillRect1_1
   dad d
   shld fillRect1_1
-l160:
+l177:
   lhld fillRect1_2
   dcx h
   shld fillRect1_2
-  jmp l158
-l159:
+  jmp l175
+l176:
   ; 113 fillRect1_int(h, r, a);
   lda fillRect1_5
   sta fillRect1_int_1
@@ -3132,34 +3209,34 @@ print1:
   ani 127
   sta print1_3
   ; 272 while(1) { 
-l161:
+l178:
   ; 273 if(n == 0) return;     
   lda print1_3
   ora a
-  jnz l163
+  jnz l180
   ; 273 return;     
   ret
-l163:
+l180:
   ; 274 c = *text;
   lhld print1_4
   mov a, m
   sta print1_c
   ; 275 if(c) ++text; else if(!e) return;convertToConfition
   ora a
-  jz l164
+  jz l181
   ; 275 ++text; else if(!e) return;
   inx h
   shld print1_4
-  jmp l165
-l164:
+  jmp l182
+l181:
   ; 275 if(!e) return;convertToConfition
   lda print1_e
   ora a
-  jnz l166
+  jnz l183
   ; 275 return;
   ret
-l166:
-l165:
+l183:
+l182:
   ; 276 s = chargen + c*8;
   lhld print1_c
   mvi h, 0
@@ -3174,15 +3251,15 @@ l165:
   ; 277 switch(st) {
   lda print1_2
   ora a
-  jz l168
+  jz l185
   cpi 1
-  jz l169
+  jz l186
   cpi 2
-  jz l170
+  jz l187
   cpi 3
-  jz l171
-  jmp l167
-l168:
+  jz l188
+  jmp l184
+l185:
   ; 278 print_p1(d, s); ++st; break;
   lhld print1_1
   shld print_p1_1
@@ -3192,8 +3269,8 @@ l168:
   lxi h, print1_2
   inr m
   ; 278 break;
-  jmp l167
-l169:
+  jmp l184
+l186:
   ; 279 print_p2(d, s); ++st; d += 0x100; break;
   lhld print1_1
   shld print_p2_1
@@ -3208,8 +3285,8 @@ l169:
   dad d
   shld print1_1
   ; 279 break;
-  jmp l167
-l170:
+  jmp l184
+l187:
   ; 280 print_p3(d, s); ++st; d += 0x100; break;
   lhld print1_1
   shld print_p3_1
@@ -3224,8 +3301,8 @@ l170:
   dad d
   shld print1_1
   ; 280 break;
-  jmp l167
-l171:
+  jmp l184
+l188:
   ; 281 print_p4(d, s); st=0; d += 0x100; break;
   lhld print1_1
   shld print_p4_1
@@ -3240,12 +3317,12 @@ l171:
   dad d
   shld print1_1
   ; 281 break;
-l167:
+l184:
   ; 283 --n;
   lxi h, print1_3
   dcr m
-  jmp l161
-l162:
+  jmp l178
+l179:
   ret
   ; --- rect1 -----------------------------------------------------------------
 rect1:
@@ -3426,13 +3503,13 @@ scroll:
   xchg
   lhld scroll_2
   call op_cmp16
-  jnc l172
+  jnc l189
   ; 307 for(; w; --w, d+=0x100, s+=0x100)
-l173:
+l190:
   ; convertToConfition
   lda scroll_3
   ora a
-  jz l174
+  jz l191
   ; 308 memcpy_back(d, s, h);
   lhld scroll_1
   shld memcpy_back_1
@@ -3441,7 +3518,7 @@ l173:
   lhld scroll_4
   mvi h, 0
   call memcpy_back
-l175:
+l192:
   lxi h, scroll_3
   dcr m
   ; Ñëîæåíèå
@@ -3454,15 +3531,15 @@ l175:
   lhld scroll_2
   dad d
   shld scroll_2
-  jmp l173
-l174:
-l172:
+  jmp l190
+l191:
+l189:
   ; 310 for(; w; --w, d+=0x100, s+=0x100)
-l176:
+l193:
   ; convertToConfition
   lda scroll_3
   ora a
-  jz l177
+  jz l194
   ; 311 memcpy(d, s, h);
   lhld scroll_1
   shld memcpy_1
@@ -3471,7 +3548,7 @@ l176:
   lhld scroll_4
   mvi h, 0
   call memcpy
-l178:
+l195:
   lxi h, scroll_3
   dcr m
   ; Ñëîæåíèå
@@ -3484,8 +3561,8 @@ l178:
   lhld scroll_2
   dad d
   shld scroll_2
-  jmp l176
-l177:
+  jmp l193
+l194:
   ret
   ; --- numberOfBit -----------------------------------------------------------------
 numberOfBit:
@@ -3509,13 +3586,13 @@ getch1:
   ; 1 (*(uchar*)0xF803)
   lxi h, 63491
   mvi m, 145
-l179:
+l196:
   ; 65 while(1) {
-l180:
+l197:
   ; 66 i = 6;
   mvi b, 6
   ; 67 while(1) {
-l182:
+l199:
   ; 68 --i;
   dcr b
   ; 1 (*(uchar*)0xF801)Ñëîæåíèå
@@ -3530,34 +3607,34 @@ l182:
   sta getch1_b
   ; 71 if(b != 0xFF) { u = 4; break; }
   cpi 255
-  jz l184
+  jz l201
   ; 71 u = 4; break; }
   mvi c, 4
   ; 71 break; }
-  jmp l183
-l184:
+  jmp l200
+l201:
   ; 72 b = KEYB2 | 0xF0;
   lda 63490
   ori 240
   sta getch1_b
   ; 73 if(b != 0xFF) { u = -4; break; }
   cpi 255
-  jz l185
+  jz l202
   ; 73 u = -4; break; }
   mvi c, 252
   ; 73 break; }
-  jmp l183
-l185:
+  jmp l200
+l202:
   ; 74 if(i) continue;convertToConfition
   mov a, b
   ora a
-  jnz l182
+  jnz l199
   mvi b, 6
   ; 76 prevCh = -1;
   mvi a, 255
   sta prevCh
-  jmp l182
-l183:
+  jmp l199
+l200:
   ; 78 b = numberOfBit(b) + u + i $ 12;
   lda getch1_b
   call numberOfBit
@@ -3577,48 +3654,48 @@ l183:
   lxi h, getch1_b
   lda prevCh
   cmp m
-  jnz l181
-  jmp l180
-l181:
+  jnz l198
+  jmp l197
+l198:
   ; 82 prevCh = b;
   lda getch1_b
   sta prevCh
   ; 84 if(b==12) {
   lda getch1_b
   cpi 12
-  jnz l188
+  jnz l205
   ; 85 rus = !rus;convertToConfition
   lda rus
   ora a
   sui 1
   sbb a
   sta rus
-  jmp l179
-l188:
+  jmp l196
+l205:
   ; 89 if(b>=24) {
   lda getch1_b
   cpi 24
-  jc l189
+  jc l206
   ; 90 if(shiftPressed()) b += 12*4;
   call shiftPressed
   ; convertToConfition
   ora a
-  jz l190
+  jz l207
   ; 90 b += 12*4;
   lda getch1_b
   adi 48
   sta getch1_b
-l190:
+l207:
   ; 91 if(rus) b += 12*8;convertToConfition
   lda rus
   ora a
-  jz l191
+  jz l208
   ; 91 b += 12*8;
   lda getch1_b
   adi 96
   sta getch1_b
-l191:
-l189:
+l208:
+l206:
   ; 94 return scanCodes[b];Ñëîæåíèå
   lhld getch1_b
   mvi h, 0
@@ -3652,7 +3729,7 @@ cmd_copy:
   sta cmd_copy_e
   ; convertToConfition
   ora a
-  jz l192
+  jz l209
   ; 14 drawError("¥¢®§¬®¦­® ®âªàëâì ¨áå®¤­ë© ä ©«", e); return 1 /*¥§ ¯¥à¥§ £àã§ª¨ ä ©«®¢*/; } 
   lxi h, string9
   shld drawError_1
@@ -3661,7 +3738,7 @@ cmd_copy:
   ; 14 return 1 /*¥§ ¯¥à¥§ £àã§ª¨ ä ©«®¢*/; } 
   mvi a, 1
   ret
-l192:
+l209:
   ; 17 drawWindow(" Š®¯¨à®¢ ­¨¥ ");
   lxi h, string10
   call drawWindow
@@ -3715,7 +3792,7 @@ l192:
   sta cmd_copy_e
   ; convertToConfition
   ora a
-  jz l193
+  jz l210
   ; 25 drawError("Žè¨¡ª  çâ¥­¨ï ä ©« ", e); return 1 /*¥§ ¯¥à¥§ £àã§ª¨ ä ©«®¢*/; } 
   lxi h, string14
   shld drawError_1
@@ -3724,7 +3801,7 @@ l192:
   ; 25 return 1 /*¥§ ¯¥à¥§ £àã§ª¨ ä ©«®¢*/; } 
   mvi a, 1
   ret
-l193:
+l210:
   ; 26 i2s32(buf, 10, &fs_result, ' ');
   lxi h, cmd_copy_buf
   shld i2s32_1
@@ -3757,7 +3834,7 @@ l193:
   sta cmd_copy_e
   ; convertToConfition
   ora a
-  jz l194
+  jz l211
   ; 31 drawError("Žè¨¡ª  fs_swap 1", e); return 1 /*¥§ ¯¥à¥§ £àã§ª¨ ä ©«®¢*/; } 
   lxi h, string16
   shld drawError_1
@@ -3766,14 +3843,14 @@ l193:
   ; 31 return 1 /*¥§ ¯¥à¥§ £àã§ª¨ ä ©«®¢*/; } 
   mvi a, 1
   ret
-l194:
+l211:
   ; 32 if(e = fs_create(to)) { drawError("¥¢®§¬®¦­® á®§¤ âì ä ©«", e); return 1 /*¥§ ¯¥à¥§ £àã§ª¨ ä ©«®¢*/; } 
   lhld cmd_copy_2
   call fs_create
   sta cmd_copy_e
   ; convertToConfition
   ora a
-  jz l195
+  jz l212
   ; 32 drawError("¥¢®§¬®¦­® á®§¤ âì ä ©«", e); return 1 /*¥§ ¯¥à¥§ £àã§ª¨ ä ©«®¢*/; } 
   lxi h, string17
   shld drawError_1
@@ -3782,9 +3859,9 @@ l194:
   ; 32 return 1 /*¥§ ¯¥à¥§ £àã§ª¨ ä ©«®¢*/; } 
   mvi a, 1
   ret
-l195:
+l212:
   ; 35 while(1) {
-l196:
+l213:
   ; 39 i2s32(buf, 10, (ulong*)&progress_l, ' ');
   lxi h, cmd_copy_buf
   shld i2s32_1
@@ -3808,15 +3885,15 @@ l196:
   sta cmd_copy_e
   ; convertToConfition
   ora a
-  jz l198
+  jz l215
   ; 43 drawError("Žè¨¡ª  fs_swap 3", e); break; }
   lxi h, string18
   shld drawError_1
   lda cmd_copy_e
   call drawError
   ; 43 break; }
-  jmp l197
-l198:
+  jmp l214
+l215:
   ; 44 if(e = fs_read(panelA.files1, (MAX_FILES*sizeof(FileInfo)) & ~511) ) { drawError("Žè¨¡ª  çâ¥­¨ï ä ©« ", e); break; }
   lhld panelA
   shld fs_read_1
@@ -3825,38 +3902,38 @@ l198:
   sta cmd_copy_e
   ; convertToConfition
   ora a
-  jz l199
+  jz l216
   ; 44 drawError("Žè¨¡ª  çâ¥­¨ï ä ©« ", e); break; }
   lxi h, string14
   shld drawError_1
   lda cmd_copy_e
   call drawError
   ; 44 break; }
-  jmp l197
-l199:
+  jmp l214
+l216:
   ; 45 if(fs_low == 0) return 0; /* ‘ ¯¥à¥§ £àã§ª®© ä ©«®¢ */;Ñëîæåíèå ñ êîíñòàíòîé 0
   lhld fs_low
   mov a, l
   ora h
-  jnz l200
+  jnz l217
   ; 45 return 0; /* ‘ ¯¥à¥§ £àã§ª®© ä ©«®¢ */;
   xra a
   ret
-l200:
+l217:
   ; 46 if(e = fs_swap()) { drawError("Žè¨¡ª  fs_swap 2", e); break; }
   call fs_swap
   sta cmd_copy_e
   ; convertToConfition
   ora a
-  jz l201
+  jz l218
   ; 46 drawError("Žè¨¡ª  fs_swap 2", e); break; }
   lxi h, string19
   shld drawError_1
   lda cmd_copy_e
   call drawError
   ; 46 break; }
-  jmp l197
-l201:
+  jmp l214
+l218:
   ; 47 if(e = fs_write(panelA.files1, fs_low)) { drawError("Žè¨¡ª  § ¯¨á¨ ä ©« ", e); break; }
   lhld panelA
   shld fs_write_1
@@ -3865,15 +3942,15 @@ l201:
   sta cmd_copy_e
   ; convertToConfition
   ora a
-  jz l202
+  jz l219
   ; 47 drawError("Žè¨¡ª  § ¯¨á¨ ä ©« ", e); break; }
   lxi h, string20
   shld drawError_1
   lda cmd_copy_e
   call drawError
   ; 47 break; }
-  jmp l197
-l202:
+  jmp l214
+l219:
   ; 50 asm {
       lhld fs_low
       xchg
@@ -3886,8 +3963,8 @@ l202:
       shld cmd_copy_progress_h
 fs_copy_l2:
     
-  jmp l196
-l197:
+  jmp l213
+l214:
   ; 65 fs_delete(to);
   lhld cmd_copy_2
   call fs_delete
@@ -3899,29 +3976,29 @@ getName:
   shld getName_1
   ; 74 for(p = name; *p; p++)
   shld getName_p
-l203:
+l220:
   ; convertToConfition
   lhld getName_p
   xra a
   ora m
-  jz l204
+  jz l221
   ; 75 if(*p == '/')
   mov a, m
   cpi 47
-  jnz l206
+  jnz l223
   ; 76 name = p+1;Ñëîæåíèå ñ êîíñòàíòîé 1
   inx h
   shld getName_1
-l206:
-l205:
+l223:
+l222:
   lhld getName_p
   mov d, h
   mov e, l
   inx h
   shld getName_p
   xchg
-  jmp l203
-l204:
+  jmp l220
+l221:
   ; 77 return name;
   lhld getName_1
   ret
@@ -3930,12 +4007,12 @@ cmd_copymove:
   sta cmd_copymove_1
   ; 88 title = copymode ? " Š®¯¨à®¢ ­¨¥ " : " ¥à¥¨¬¥­®¢ ­¨¥/¥à¥­®á ";
   ora a
-  jz l207
+  jz l224
   lxi h, string10
-  jmp l208
-l207:
+  jmp l225
+l224:
   lxi h, string21
-l208:
+l225:
   shld cmd_copymove_title
   ; 91 addPath1(A_CMDLINE);
   mvi a, 1
@@ -3943,10 +4020,10 @@ l208:
   ; 92 if(cmdline[0] == 0) return;
   lda (cmdline)+(0)
   ora a
-  jnz l209
+  jnz l226
   ; 92 return;
   ret
-l209:
+l226:
   ; 94 strcpy(buf, cmdline);
   lxi h, cmd_copymove_buf
   shld strcpy_1
@@ -3956,7 +4033,7 @@ l209:
   call shiftPressed
   ; convertToConfition
   ora a
-  jz l210
+  jz l227
   ; 98 getSelectedName(cmdLine);
   lxi h, cmdline
   call getSelectedName
@@ -3964,8 +4041,8 @@ l209:
   lxi h, cmdline
   call strlen
   shld cmdline_pos
-  jmp l211
-l210:
+  jmp l228
+l227:
   ; 102 strcpy(cmdline, panelB.path);
   lxi h, cmdline
   shld strcpy_1
@@ -3979,21 +4056,21 @@ l210:
   dcx h
   mov a, l
   ora h
-  jz l212
+  jz l229
   ; 108 if(cmdline_pos == 255) { // ãä¥à ¯¥à¥¯®«­¥­ Ñëîæåíèå
   lhld cmdline_pos
   lxi d, 65281
   dad d
   mov a, l
   ora h
-  jnz l213
+  jnz l230
   ; 109 drawError(title, ERR_RECV_STRING);
   lhld cmd_copymove_title
   shld drawError_1
   mvi a, 11
   call drawError
-  jmp l214
-l213:
+  jmp l231
+l230:
   ; 112 strcpy(cmdline+cmdline_pos, "/");Ñëîæåíèå
   lhld cmdline_pos
   lxi d, cmdline
@@ -4005,8 +4082,8 @@ l213:
   lhld cmdline_pos
   inx h
   shld cmdline_pos
-l212:
-l211:
+l229:
+l228:
   ; 118 e=1; 
   mvi a, 1
   sta cmd_copymove_e
@@ -4015,7 +4092,7 @@ l211:
   call inputBox
   ; convertToConfition
   ora a
-  jz l215
+  jz l232
   ; 124 if(cmdline[cmdline_pos - 1] == '/') {      Ñëîæåíèå ñ êîíñòàíòîé -1
   lhld cmdline_pos
   dcx h
@@ -4024,7 +4101,7 @@ l211:
   dad d
   mov a, m
   cpi 47
-  jnz l216
+  jnz l233
   ; 125 name = getName(buf);
   lxi h, cmd_copymove_buf
   call getName
@@ -4038,14 +4115,14 @@ l211:
   ; Ñëîæåíèå
   lxi d, 65280
   dad d
-  jnc l217
+  jnc l234
   ; 127 drawError(title, ERR_RECV_STRING);
   lhld cmd_copymove_title
   shld drawError_1
   mvi a, 11
   call drawError
-  jmp l214
-l217:
+  jmp l231
+l234:
   ; 130 strcpy(cmdline + cmdline_pos, name);Ñëîæåíèå
   lhld cmdline_pos
   lxi d, cmdline
@@ -4053,21 +4130,21 @@ l217:
   shld strcpy_1
   lhld cmd_copymove_name
   call strcpy
-l216:
+l233:
   ; 134 absolutePath();
   call absolutePath
   ; 136 if(copymode) {convertToConfition
   lda cmd_copymove_1
   ora a
-  jz l218
+  jz l235
   ; 137 e = cmd_copy(buf, cmdline);
   lxi h, cmd_copymove_buf
   shld cmd_copy_1
   lxi h, cmdline
   call cmd_copy
   sta cmd_copymove_e
-  jmp l219
-l218:
+  jmp l236
+l235:
   ; 140 e = fs_move(buf, cmdline);
   lxi h, cmd_copymove_buf
   shld fs_move_1
@@ -4078,12 +4155,12 @@ l218:
   lxi h, string22
   shld drawError_1
   call drawError
-l219:
-l215:
+l236:
+l232:
   ; 150 if(!e) {convertToConfition
   lda cmd_copymove_e
   ora a
-  jnz l220
+  jnz l237
   ; 151 getFiles();
   call getFiles
   ; 152 swapPanels(); getFiles(); swapPanels();
@@ -4092,8 +4169,8 @@ l215:
   call getFiles
   ; 152 swapPanels();
   call swapPanels
-l220:
-l214:
+l237:
+l231:
   ; 157 repairScreen(0);
   xra a
   jmp repairScreen
@@ -4116,11 +4193,11 @@ cmd_run:
   sta cmd_run_2
   ; 19 if(selectedFile) getSelectedName(cmdline);convertToConfition
   ora a
-  jz l221
+  jz l238
   ; 19 getSelectedName(cmdline);
   lxi h, cmdline
   call getSelectedName
-l221:
+l238:
   ; 22 c = cmdLine;
   lxi h, cmdline
   shld cmd_run_c
@@ -4128,7 +4205,7 @@ l221:
   lhld cmd_run_1
   mov a, l
   ora h
-  jnz l222
+  jnz l239
   ; 28 absolutePath();
   call absolutePath
   ; 31 prog = cmdLine;
@@ -4142,18 +4219,18 @@ l221:
   ; 33 if(c) *c=0, ++c; else c="";convertToConfition
   mov a, l
   ora h
-  jz l223
+  jz l240
   ; 33 *c=0, ++c; else c="";
   mvi m, 0
   inx h
   shld cmd_run_c
-  jmp l224
-l223:
+  jmp l241
+l240:
   ; 33 c="";
   lxi h, string0
   shld cmd_run_c
-l224:
-l222:
+l241:
+l239:
   ; 36 cmd_run2(prog, c);
   lhld cmd_run_1
   shld cmd_run2_1
@@ -4166,29 +4243,29 @@ cmd_new:
   ; 12 title = dir ? " ‘®§¤ ­¨¥ ¯ ¯ª¨ " : " ‘®§¤ ­¨¥ ä ©«  ";
   lda cmd_new_1
   ora a
-  jz l225
+  jz l242
   lxi h, string23
-  jmp l226
-l225:
+  jmp l243
+l242:
   lxi h, string24
-l226:
+l243:
   shld cmd_new_title
   ; 13 if(inputBox(title)) {
   call inputBox
   ; convertToConfition
   ora a
-  jz l227
+  jz l244
   ; 16 if(cmdline_pos) {    convertToConfition
   lhld cmdline_pos
   mov a, l
   ora h
-  jz l228
+  jz l245
   ; 19 absolutePath();
   call absolutePath
   ; 21 if(dir) {convertToConfition
   lda cmd_new_1
   ora a
-  jz l229
+  jz l246
   ; 23 e = fs_mkdir(cmdline);
   lxi h, cmdline
   call fs_mkdir
@@ -4200,22 +4277,22 @@ l226:
   shld drawError_1
   lda cmd_new_e
   call drawError
-  jmp l231
-l229:
+  jmp l248
+l246:
   ; 32 if(cmdline_pos==255) { Ñëîæåíèå
   lhld cmdline_pos
   lxi d, 65281
   dad d
   mov a, l
   ora h
-  jnz l232
+  jnz l249
   ; 33 drawError("Žè¨¡ª  á®§¤ ­¨ï ä ©« ", ERR_RECV_STRING);
   lxi h, string26
   shld drawError_1
   mvi a, 11
   call drawError
-  jmp l233
-l232:
+  jmp l250
+l249:
   ; 39 drawError("Žè¨¡ª  á®§¤ ­¨ï ä ©« ", fs_create(cmdline));
   lxi h, string26
   shld drawError_1
@@ -4223,10 +4300,10 @@ l232:
   call fs_create
   jmp drawError
   ; 42 return; // ’ ¬ ¢ë§ë¢ ¥âáï repairScreen
-l233:
-l231:
-l228:
-l227:
+l250:
+l248:
+l245:
+l244:
   ; 52 repairScreen(0);
   xra a
   jmp repairScreen
@@ -4320,14 +4397,14 @@ cmd_freespace:
   sta cmd_freespace_e
   ; convertToConfition
   ora a
-  jz l234
+  jz l251
   ; 23 drawError("Žè¨¡ª  çâ¥­¨ï ¤¨áª ", e);
   lxi h, string31
   shld drawError_1
   lda cmd_freespace_e
   call drawError
-  jmp l235
-l234:
+  jmp l252
+l251:
   ; 27 graph1();
   call graph1
   ; 28 print(19, 10, 27|0x80, "");
@@ -4348,16 +4425,16 @@ l234:
   call fs_gettotal
   ; convertToConfition
   ora a
-  jnz l236
+  jnz l253
   ; 32 cmd_freespace_1(10, "‚á¥£®:");
   mvi a, 10
   sta cmd_freespace_1_1
   lxi h, string33
   call cmd_freespace_1
-l236:
+l253:
   ; 35 getch1();
   call getch1
-l235:
+l252:
   ; 39 repairScreen(0);
   xra a
   jmp repairScreen
@@ -4367,11 +4444,11 @@ cmd_delete:
   ; 8 if(cmdline[0]==0) { 
   lda (cmdline)+(0)
   ora a
-  jnz l237
+  jnz l254
   ; 9 clearCmdLine();
   jmp clearCmdLine
   ; 10 return;
-l237:
+l254:
   ; 12 cmdLine_pos = strlen(cmdLine);
   lxi h, cmdline
   call strlen
@@ -4381,7 +4458,7 @@ l237:
   call inputBox
   ; convertToConfition
   ora a
-  jz l238
+  jz l255
   ; 18 absolutePath();
   call absolutePath
   ; 21 e = fs_delete(cmdline);
@@ -4395,7 +4472,7 @@ l237:
   shld drawError_1
   lda cmd_delete_e
   call drawError
-l238:
+l255:
   ; 31 repairScreen(0);
   xra a
   jmp repairScreen
@@ -4407,7 +4484,7 @@ drawWindow:
   lxi h, 48
   shld drawWindow_i
   ; 10 while(1) {
-l240:
+l257:
   ; 12 fillRect(56+i+i, 60+i, 326-i-i, 165-i);Ñëîæåíèå
   lxi d, 56
   dad d
@@ -4455,7 +4532,7 @@ l240:
   lhld drawWindow_i
   mov a, l
   ora h
-  jz l241
+  jz l258
   mov a, l
   sui 8
   mov l, a
@@ -4463,8 +4540,8 @@ l240:
   sbi 0
   mov h, a
   shld drawWindow_i
-  jmp l240
-l241:
+  jmp l257
+l258:
   ; 16 graph0();
   call graph0
   ; 17 rect1(RECTARGS(70,85-10,314,140+10));
@@ -4542,13 +4619,13 @@ drawInput:
   lhld drawInput_3
   mvi h, 0
   call op_cmp16
-  jc l243
-  jz l243
+  jc l260
+  jz l260
   ; 30 cmdline_offset = 0; else cmdline_offset = cmdline_pos-max;
   lxi h, 0
   shld cmdline_offset
-  jmp l244
-l243:
+  jmp l261
+l260:
   ; 30 cmdline_offset = cmdline_pos-max;16 áèòíàÿ àðèôìåòè÷åñêàÿ îïåðàöèÿ ñ êîíñòàíòîé
   lhld drawInput_3
   mvi h, 0
@@ -4561,7 +4638,7 @@ l243:
   sbb d
   mov h, a
   shld cmdline_offset
-l244:
+l261:
   ; 31 c1 = cmdline_pos - cmdline_offset;16 áèòíàÿ àðèôìåòè÷åñêàÿ îïåðàöèÿ ñ êîíñòàíòîé
   lhld cmdline_offset
   xchg
@@ -4594,12 +4671,12 @@ l244:
   lhld drawInput_3
   mvi h, 0
   call op_cmp16
-  jnc l245
+  jnc l262
   ; 35 c1 = max;
   lhld drawInput_3
   mvi h, 0
   shld drawInput_c1
-l245:
+l262:
   ; 36 ++c1;
   lhld drawInput_c1
   inx h
@@ -4634,15 +4711,15 @@ processInput:
   sta processInput_1
   ; 45 if(c==8) {
   cpi 8
-  jnz l246
+  jnz l263
   ; 46 if(cmdline_pos==0) return;Ñëîæåíèå ñ êîíñòàíòîé 0
   lhld cmdline_pos
   mov a, l
   ora h
-  jnz l247
+  jnz l264
   ; 46 return;
   ret
-l247:
+l264:
   ; 47 --cmdline_pos;    
   dcx h
   shld cmdline_pos
@@ -4650,23 +4727,23 @@ l247:
   lxi d, cmdline
   dad d
   mvi m, 0
-l246:
+l263:
   ; 50 if(c>=32 && c<0xF0) {
   lda processInput_1
   cpi 32
-  jc l248
+  jc l265
   cpi 240
-  jnc l248
+  jnc l265
   ; 51 if(cmdline_pos==255) return; Ñëîæåíèå
   lhld cmdline_pos
   lxi d, 65281
   dad d
   mov a, l
   ora h
-  jnz l249
+  jnz l266
   ; 51 return; 
   ret
-l249:
+l266:
   ; 52 cmdline[cmdline_pos] = c;Ñëîæåíèå
   lhld cmdline_pos
   lxi d, cmdline
@@ -4681,17 +4758,17 @@ l249:
   lxi d, cmdline
   dad d
   mvi m, 0
-l248:
+l265:
   ret
   ; --- drawError -----------------------------------------------------------------
 drawError:
   sta drawError_2
   ; 73 if(e==0) return;
   ora a
-  jnz l250
+  jnz l267
   ; 73 return;
   ret
-l250:
+l267:
   ; 75 old=graphOffset;
   lhld graphOffset
   shld drawError_old
@@ -4785,7 +4862,7 @@ inputBox:
   mvi a, 12
   call fillRect1
   ; 111 while(1) {
-l251:
+l268:
   ; 112 graph0();
   call graph0
   ; 113 setColor(COLOR_CYAN);
@@ -4803,30 +4880,30 @@ l251:
   sta inputBox_c
   ; 117 if(c==13) { graphOffset=old; return 1; }
   cpi 13
-  jnz l253
+  jnz l270
   ; 117 graphOffset=old; return 1; }
   lhld inputBox_old
   shld graphOffset
   ; 117 return 1; }
   mvi a, 1
   ret
-l253:
+l270:
   ; 118 if(c==27) { graphOffset=old; return 0; }
   lda inputBox_c
   cpi 27
-  jnz l254
+  jnz l271
   ; 118 graphOffset=old; return 0; }
   lhld inputBox_old
   shld graphOffset
   ; 118 return 0; }
   xra a
   ret
-l254:
+l271:
   ; 119 processInput(c);
   lda inputBox_c
   call processInput
-  jmp l251
-l252:
+  jmp l268
+l269:
   ret
   ; --- inputBoxR -----------------------------------------------------------------
 inputBoxR:
@@ -5091,7 +5168,7 @@ i2s32:
   xchg
   shld div32_h
   ; 11 while(1) {
-l255:
+l272:
   ; 12 div32(10);
   lxi h, 10
   call div32
@@ -5113,25 +5190,25 @@ l255:
   ; Ñëîæåíèå ñ êîíñòàíòîé 0
   mov a, l
   ora h
-  jnz l257
+  jnz l274
   ; 15 return;
   ret
-l257:
+l274:
   ; 16 if(div32_l == 0 && div32_h == 0) break;Ñëîæåíèå ñ êîíñòàíòîé 0
   lhld div32_l
   mov a, l
   ora h
-  jnz l258
+  jnz l275
   ; Ñëîæåíèå ñ êîíñòàíòîé 0
   lhld div32_h
   mov a, l
   ora h
-  jz l256
-l258:
-  jmp l255
-l256:
+  jz l273
+l275:
+  jmp l272
+l273:
   ; 19 while(1) {
-l259:
+l276:
   ; 20 --buf;
   lhld i2s32_1
   dcx h
@@ -5146,9 +5223,9 @@ l259:
   ; Ñëîæåíèå ñ êîíñòàíòîé 0
   mov a, l
   ora h
-  jz l260
-  jmp l259
-l260:
+  jz l277
+  jmp l276
+l277:
   ret
   ; --- i2s -----------------------------------------------------------------
 i2s:
@@ -5162,7 +5239,7 @@ i2s:
   ; 5 *buf = 0;
   mvi m, 0
   ; 6 while(1) {
-l262:
+l279:
   ; 7 v /= 10;
   lxi d, 10
   lhld i2s_2
@@ -5186,19 +5263,19 @@ l262:
   ; 11 if(n == 0) return;Ñëîæåíèå ñ êîíñòàíòîé 0
   mov a, l
   ora h
-  jnz l264
+  jnz l281
   ; 11 return;
   ret
-l264:
+l281:
   ; 12 if(v == 0) break;Ñëîæåíèå ñ êîíñòàíòîé 0
   lhld i2s_2
   mov a, l
   ora h
-  jz l263
-  jmp l262
-l263:
+  jz l280
+  jmp l279
+l280:
   ; 14 while(1) {
-l266:
+l283:
   ; 15 --buf;
   lhld i2s_1
   dcx h
@@ -5213,9 +5290,9 @@ l266:
   ; Ñëîæåíèå ñ êîíñòàíòîé 0
   mov a, l
   ora h
-  jz l267
-  jmp l266
-l267:
+  jz l284
+  jmp l283
+l284:
   ret
   ; --- op_shr16 -----------------------------------------------------------------
 op_shr16:
@@ -5335,14 +5412,14 @@ fs_findfirst:
   lhld fs_findfirst_1
   mov a, m
   cpi 47
-  jnz l269
+  jnz l286
   ; 4 path++;
   mov d, h
   mov e, l
   inx h
   shld fs_findfirst_1
   xchg
-l269:
+l286:
   ; 5 asm {
     PUSH B
     ; hl = fs_findfirst_3
@@ -5391,12 +5468,12 @@ setColorAutoDisable:
   ; Ñëîæåíèå ñ êîíñòàíòîé 0
   mov a, l
   ora h
-  jnz l270
+  jnz l287
   ; 5 asm {
       MVI A, 0C9h
       STA setColor
     
-l270:
+l287:
   ret
   ; --- clrscr -----------------------------------------------------------------
 clrscr:

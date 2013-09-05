@@ -698,6 +698,11 @@ void cmd_bkspc() {
   drawCmdLine();
 }
 
+uchar alt() {
+  if(cmdLine_pos==0) return 0;
+  return shiftPressed();
+}
+
 void main() {
   uchar c, y, w, r;
   uchar* e;
@@ -735,16 +740,23 @@ void main() {
 
   while(1) {
     c = getch1();
-
-    switch(c) {
+     switch(c) {
       case KEY_BKSPC: cmd_bkspc(); continue;
+      case '1':       if(!alt()) break;      
       case KEY_F1:    cmd_freespace(); continue;
+      case '2':       if(!alt()) break;      
       case KEY_F2:    cmd_new(0); continue;
+      case '3':       if(!alt()) break;      
       case KEY_F3:    cmd_run("view.rks", 1); continue;
+      case '4':       if(!alt()) break;      
       case KEY_F4:    if(shiftPressed()) cmd_new(0); else cmd_run("edit.rks", 1); continue;
+      case '5':       if(!alt()) break;      
       case KEY_F5:    cmd_copymove(1); continue;
+      case '6':       if(!alt()) break;      
       case KEY_F6:    cmd_copymove(0); continue;
+      case '7':       if(!alt()) break;      
       case KEY_F7:    cmd_new(1); continue;
+      case '8':       if(!alt()) break;      
       case KEY_F8:    cmd_delete(); continue;
       case KEY_ENTER: if(cmdline_pos) cmd_run(0, 0); else addPath1(A_ENTER); continue;
       case KEY_ESC:   if(cmdline_pos) clearCmdLine(); else dropPath(); continue;
